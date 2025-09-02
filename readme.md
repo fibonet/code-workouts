@@ -14,7 +14,7 @@ like loops, conditionals, functions, arrays, classes, etc.
 ## 📝 How It Works
 
 1. **Choose a problem**
-   - Problems are listed in the `problems/` folder.
+   - Problems are listed in the [problems/](./problems) folder.
    - Each problem has starter code in both Python and JavaScript.
 
 1. **Solve it in your preferred language**
@@ -30,7 +30,7 @@ like loops, conditionals, functions, arrays, classes, etc.
 
 ## 📚 The Problems
 
-All problems are stored in the [./problems](./problems) folder.  
+All problems are stored in the [problems/](./problems) folder.  
 Each problem has starter code in **Python** and **JavaScript**.
 
 
@@ -44,8 +44,9 @@ Each problem has starter code in **Python** and **JavaScript**.
 
 ## 💡 Tips
 
-- First, make it work... Only then, make it right.
-- Write code that is **clear and readable**.
-- Try to handle **edge cases** (empty input, unusual values) after the **happy flows**.
+- First, make it work... Then, make it right.
+- Write code that is *clear and readable*.
+- Try to handle *edge cases* (empty input, unusual values) after the *happy flows*.
 - Comment your thought process if the solution isn’t obvious.
-- Don't worry about efficiency, **focus on correctness and clarity first**.
+- Don't worry about efficiency, *focus on correctness and clarity first*.
+
