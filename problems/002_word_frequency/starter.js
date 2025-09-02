@@ -2,5 +2,21 @@ function topWords(text) {
     // Return an array of top 3 words
 }
 
-let text = "Hello world! Hello AI. Coding with AI is fun.";
+let text = `
+Roses are red,
+Violets are blue,
+It compiles on my machine,
+Why not on you?
+
+I thought I had fixed it,
+the logic was sound,
+but then came the tests...
+and the bugs gathered round.
+
+Code is poetry,
+or so they claim,
+until a semicolon
+breaks the whole game.
+`;
+
 console.log(topWords(text));
