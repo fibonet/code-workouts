@@ -1,135 +1,109 @@
-import cmath
-import math
 import sys
-from functools import partial
+from dataclasses import dataclass
 
 SIZE = complex(7000, 3000)
 MARS_GRAVITY = 3.711
 MAX_THRUST = 4
 MAX_FLY_TILT = 45
 MAX_LAND_TILT = 9
+GLIDE_HEIGHT = 2700
 
 
-def lerp(x, x1, x2, y1, y2):
-    clamp_x = max(x1, min(x, x2))
-    norm_x = (clamp_x - x1) / (x2 - x1) if (x2 - x1) != 0 else 0
-    return y1 + (y2 - y1) * norm_x
+def log(*args, **kwargs):
+    print(*args, **kwargs, file=sys.stderr)
 
 
-lerp_thrust = partial(lerp, x1=0, x2=13, y1=0, y2=4)
+def linear_interpolation(x1, x2, y1, y2, x):
+    """
+    Compute the linear interpolation for a given x
+    between points (x1, y1) and (x2, y2).
+    """
+    if x2 == x1:
+        raise ValueError("x1 and x2 cannot be the same value.")
+
+    y = y1 + ((x - x1) * (y2 - y1) / (x2 - x1))
+    return y
 
 
-def clamp(left, x, right):
-    return max(left, min(x, right))
+@dataclass
+class PidController:
+    setpoint: float
+    kp: float
+    ki: float
+    kd: float
+
+    integral: float = 0
+    error: float = 0
+
+    def __str__(self):
+        return f"e: {self.error:.3}, i: {self.integral:.3}"
+
+    def output(self, actual):
+        distance = self.setpoint - actual
+        proportional = distance * self.kp
+        integral = (self.integral + distance) * self.ki
+        derivative = (distance - self.error) * self.kd
+
+        # Save state for next invokation
+        self.integral = integral
+        self.error = distance
+
+        log(
+            f"d: {distance} / p:{proportional:.3} + i:{integral:.3} + d:{derivative:.3}"
+        )
+
+        out = proportional + integral + derivative
+        log(out, "=>", int(out))
+
+        return int(out)
 
 
-def log_distance(x: int, left: int, right: int, damp=16):
-    if left < x < right:
-        return 0
-    if x < left:
-        distance = x - left
-    else:
-        distance = x - right
-    return math.copysign(math.log(abs(distance) / damp + 1), distance)
-
-
-def flight_control(position, velocity, target):
-    kp_pos = 0.0025
-    kp_velo = 0.5
-    target_velocity = complex(0, 0)
-
-    pos_err = target - position
-    velo_err = target_velocity - velocity
-    control_cc = kp_pos * pos_err + kp_velo * velo_err
-
-    power, direction = cmath.polar(control_cc)
-    if direction <= 0:
-        max_tilt = MAX_FLY_TILT
-        as_tilt = -direction - cmath.pi / 2
-        thrust = 4 - int(lerp_thrust(abs(control_cc.imag)))
-    else:
-        # should go up
-        max_tilt = MAX_FLY_TILT  # MAX_LAND_TILT
-        as_tilt = direction - cmath.pi / 2
-        thrust = 4
-    print(
-        f"{math.degrees(direction):.0f} vs {math.degrees(as_tilt):.0f} <)",
-        file=sys.stderr,
-    )
-    print(
-        f"{control_cc:.1f} / {power:.1f} ~ {lerp_thrust(power):.1f}",
-        file=sys.stderr,
-    )
-
-    tilt = min(max_tilt, max(-max_tilt, int(math.degrees(as_tilt))))
-
-    return tilt, thrust
-
-
-def landing_control(position, velocity, target):
-    kp_pos = 0.004
-    kp_velo = 0.5
-    target_velocity = complex(0, -38)
-
-    pos_err = target - position
-    velo_err = target_velocity - velocity
-    control_cc = kp_pos * pos_err + kp_velo * velo_err
-
-    power, direction = cmath.polar(control_cc)
-    if direction <= 0:
-        as_tilt = -direction - cmath.pi / 2
-        thrust = 4 - int(lerp_thrust(abs(control_cc.imag)))
-    else:
-        as_tilt = direction - cmath.pi / 2
-        thrust = 4
-    print(
-        f"{math.degrees(direction):.0f} vs {math.degrees(as_tilt):.0f} <)",
-        file=sys.stderr,
-    )
-    print(
-        f"{control_cc:.1f} / {power:.1f} ~ {lerp_thrust(power):.1f}",
-        file=sys.stderr,
-    )
-
-    if abs(pos_err.imag) < 100:
-        tilt = 0
-    else:
-        tilt = min(MAX_LAND_TILT, max(-MAX_LAND_TILT, int(math.degrees(as_tilt))))
-
-    return tilt, thrust
-
-
-## Parse landscape
-land_points = int(input())
-landscape = list()
-previous = complex()
+# NOTE: Parse terrain
+terrain = list()
 target = complex()
-platform_width = 0
-for i in range(land_points):
-    pt = complex(*(int(j) for j in input().split()))
-    landscape.append(pt)
-    if pt.imag == previous.imag:
-        target = complex((previous.real + pt.real) / 2, pt.imag)
-        platform_width = (pt.real - previous.real) / 2
-    previous = pt
+target_width = 1
+previous = complex()
 
-is_landing = False
-start_y = None
-high_target = complex()
+size = int(input())
+for i in range(size):
+    coords = tuple(map(int, input().split()))
+    current = complex(*coords)
+    terrain.append(current)
+
+    # landing target is in the middle of straigh section
+    if current.imag == previous.imag:
+        target = (previous + current) / 2
+        target_width = abs(current - previous)
+
+    previous = current
+
+thruster = PidController(target.imag, kp=1 / 100, ki=1 / 1000, kd=1 / 100)
+tilter = PidController(target.real, kp=1 / 50, ki=1 / 1000, kd=1)
+
+# run once to eliminate the huge error on first step
+x, y, hs, vs, fuel, tilt, thrust = tuple(map(int, input().split()))
+position = complex(x, y)
+velocity = complex(hs, vs)
+tilt = tilter.output(position.real)
+h_distance = target.real - position.real
+print(45 if h_distance < 0 else -45, 4)
+
 while True:
-    x, y, hs, vs, fuel, tilt, thrust = [int(i) for i in input().split()]
-    pos = complex(x, y)
+    x, y, hs, vs, fuel, tilt, thrust = tuple(map(int, input().split()))
+
+    position = complex(x, y)
     velocity = complex(hs, vs)
-    if start_y is None:
-        start_y = y
-        high_target = complex(target.real, start_y - 100)
+    h_distance = target.real - position.real
 
-    print(is_landing, pos, velocity, fuel, tilt, thrust, file=sys.stderr)
-    if is_landing:
-        tilt, thrust = landing_control(pos, velocity, target)
+    tilt = tilter.output(position.real)
+
+    if abs(h_distance) < target_width / 2:
+        # go into descent mode
+        what = thruster.output(position.imag)
+        thrust_f = linear_interpolation(-50, 0, 0, 4, what)
+        log("thr", thrust_f)
+        thrust = int(thrust_f)
     else:
-        tilt, thrust = flight_control(pos, velocity, high_target)
-        if abs(target.real - x) < platform_width and abs(hs) < 9:
-            is_landing = True
+        thrust = 4
 
-    print(tilt, thrust)
+    print(-tilt, thrust)
