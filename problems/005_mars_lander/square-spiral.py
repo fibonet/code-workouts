@@ -28,27 +28,28 @@ def letter_streamer(pattern1, pattern2):
 def spiral_walker(d_corner, direction, canvas, size):
     row, col, towards = d_corner
     rs, cs = MOVES[towards]
-    center = (size + 1) // 2, (size + 1) // 2
 
     value = None
     while value is None:
         yield row, col
 
-        if (row, col) == center:
-            break
-        elif canvas[row + rs][col + cs] == OUTSIDE:
+        if (vnext := canvas[row + rs][col + cs]) == OUTSIDE:
             towards = TURNS[direction][towards]
             rs, cs = MOVES[towards]
             row, col = row + rs, col + cs
-        elif (
-            ahead := canvas[row + 2 * rs][col + 2 * cs]
-        ) is not None and ahead.isalpha():
-            # look ahead
-            towards = TURNS[direction][towards]
-            rs, cs = MOVES[towards]
-            row, col = row + rs, col + cs
-        else:
-            row, col = row + rs, col + cs
+        elif vnext is None:
+            v2next = canvas[row + 2 * rs][col + 2 * cs]
+            if v2next is None:
+                row, col = row + rs, col + cs
+            else:
+                # Do the turn and check again
+                towards = TURNS[direction][towards]
+                rs, cs = MOVES[towards]
+                v2next = canvas[row + 2 * rs][col + 2 * cs]
+                if v2next is not None:
+                    break
+
+                row, col = row + rs, col + cs
 
         value = canvas[row][col]
 
