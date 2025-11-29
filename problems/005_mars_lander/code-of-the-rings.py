@@ -1,4 +1,5 @@
 import sys
+from collections import Counter
 
 
 def log(*args, **kwargs):
@@ -27,22 +28,47 @@ runes = [" "] * SIZE
 magic_phrase = input()
 
 actions = list()
-for i, letter in enumerate(magic_phrase):
-    mi = i % SIZE
-    left = runes[mi]
-    count = chr_dist(left, letter)
-    # log(f"{i:03} : {mi:02}  {letter!r} - {left!r} = {count}")
 
-    runes[mi] = letter
+# prepare the runes based on occurences
+prepare = list()
+count = Counter(magic_phrase)
+lookup = dict()
+for i, (let, mult) in enumerate(count.items()):
+    dist = chr_dist(runes[i], let)
+    if dist < 0:
+        prepare.append("-" * (-dist))
+    elif dist > 0:
+        prepare.append("+" * dist)
+    else:
+        prepare.append("")
 
-    parts = list()
-    if count < 0:
-        parts.append("-" * (-count))
-    elif count > 0:
-        parts.append("+" * count)
+    runes[i] = let
+    lookup[let] = i
 
-    parts.append(".")
-    actions.append("".join(parts))
+actions.append(">".join(prepare))
+
+# walk through magic phrase
+prev_pos = len(count) - 1
+for letter in magic_phrase:
+    next_pos = lookup[letter]
+
+    dist = next_pos - prev_pos
+    if dist < 0:
+        steps = -dist
+        move = "<"
+    elif dist > 0:
+        steps = dist
+        move = ">"
+    else:
+        move = None
+        steps = 0
+
+    if move:
+        actions.append(f"{move * steps}.")
+    else:
+        actions.append(".")
+
+    prev_pos = next_pos
 
 
-print(">".join(actions))
+print("".join(actions))
