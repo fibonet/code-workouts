@@ -1,58 +1,72 @@
+#include <algorithm>
 #include <iomanip>
 #include <iostream>
+#include <span>
+#include <string>
+#include <vector>
 
 using namespace std;
 
-void print(unsigned int arr[], int size) {
-    for (int i = 0; i < size; i++) {
-        if (i > 0) {
-            cerr << ' ';
-        }
-        cerr << setfill('0') << setw(8) << hex << arr[i];
+void log(span<const unsigned int> arr, ) {
+    for (const auto &value : arr) {
+        cerr << setfill('0') << setw(8) << hex << value << " ";
     }
     cerr << endl;
 }
 
-int main() {
-    int ss;
-    cin >> ss;
-    const int size = ss >> 4;
-    unsigned int a[size];
-    unsigned int b[size];
-    unsigned int input[size];
+vector<unsigned int> encode(span<const unsigned int> data, size_t size) {
+    vector<unsigned int> encoded(data.size(), 0);
 
-    for (int i = 0; i < size; i++) {
+    for (size_t i = 0; i < size; i++) {
+        for (size_t j = 0; j < size; j++) {
+            encoded[(i + j) / 32] ^=
+                ((data[i / 32] >> (i % 32)) &
+                 (data[j / 32 + size / 32] >> (j % 32)) & 1)
+                << ((i + j) % 32);
+        }
+    }
+
+    return encoded;
+}
+
+vector<unsigned int> decode(span<const unsigned int> encoded, size_t size) {
+    vector<unsigned int> decoded(encoded.size(), 0);
+
+    // For each bit position in encoded
+    for (size_t i = 0; i < size; i++) {
+        for (size_t j = 0; j < size; j++) {
+            cerr << dec << i << "," << j << " : " << i + j << " ~ "
+                 << (i + j) / 32 << endl;
+
+            decoded[(i + j) / 32] ^=
+                ((encoded[i / 32] >> (i % 32)) &
+                 (encoded[j / 32 + size / 32] >> (j % 32)) & 1)
+                << ((i + j) % 32);
+        }
+    }
+
+    return decoded;
+}
+
+int main() {
+    size_t size;
+    cin >> size;
+    const size_t storeSize = size >> 4;
+
+    vector<unsigned int> input(storeSize);
+    for (size_t i = 0; i < size; i++) {
         cin >> hex >> input[i];
     }
 
-    unsigned int bb = 3;
-    for (int ai = 0; ai < 16; ai++) {
-        std::fill(b, b + size, 0);
-        std::fill(a, a + size, 0);
+    cerr << "Using " << size << " bits, stored as -> " << storeSize << " uints."
+         << endl;
+    cerr << "Read from stdin:" << endl;
+    log(input);
 
-        a[0] = bb;
-        a[1] = bb;
-        bb <<= 1;
+    vector<unsigned int> play = decode(input, size);
 
-        for (int i = 0; i < size; i++) {
-            const int ih = i >> 5;
-            const int il = i & 31;
+    cerr << "new shit decoder:" << endl;
+    log(play);
 
-            for (int j = 0; j < size; j++) {
-                const int jh = j >> 5;
-                const int jl = j & 31;
-
-                cerr << i << "," << j << ":" << (i + j) / 32 << endl;
-                b[(i + j) / 32] ^= ((a[i / 32] >> (i % 32)) &
-                                    (a[j / 32 + size / 32] >> (j % 32)) & 1)
-                                   << ((i + j) % 32);
-            }
-        }
-
-        cerr << "--- " << ai << " ---" << endl;
-        print(a, size);
-        print(b, size);
-    }
-
-    return 0;
+    cout << "ANSWER" << endl;
 }
