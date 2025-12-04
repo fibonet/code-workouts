@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
+import re
 
 
 def sum_invalid_ranges(ranges: list):
     count, total = 0, 0
+    has_repeated_sequence = re.compile(r"^(\d+)\1+$")
     for range_spec in ranges:
         first, last = map(int, range_spec.split("-"))
-
         for value in range(first, last + 1):
             text = str(value)
-            mid, r = divmod(len(text), 2)
-            if r == 0 and text[:mid] == text[mid:]:
+            if has_repeated_sequence.match(text):
                 count += 1
                 total += value
 
