@@ -21,7 +21,7 @@ def neighbours_of(pos: tuple[int, int], size: tuple[int, int]) -> tuple:
     )
 
 
-def find_movable_rolls(grid: list):
+def find_removable_rolls(grid: list):
     size = len(grid), len(grid[0])
     counter = 0
 
@@ -46,11 +46,15 @@ def main(filename: str):
 
     grid = list(map(list, content.split()))
 
-    movable = find_movable_rolls(grid)
-    # for row in grid:
-    #     print("".join(row))
+    removed_count = 0
+    while find_removable_rolls(grid):
+        for row, full_row in enumerate(grid):
+            for col, value in enumerate(full_row):
+                if value == "x":
+                    grid[row][col] = "."
+                    removed_count += 1
 
-    print(f"There are {movable=} rolls.")
+    print(f"There were {removed_count=} rolls removed.")
 
 
 if __name__ == "__main__":
