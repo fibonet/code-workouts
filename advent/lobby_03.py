@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import enum
 from collections import deque
 from operator import itemgetter
 
