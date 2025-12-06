@@ -1,4 +1,3 @@
-#include <algorithm>
 #include <iomanip>
 #include <iostream>
 #include <span>
@@ -7,11 +6,11 @@
 
 using namespace std;
 
-void log(span<const unsigned int> arr, ) {
+void hex_log(span<const unsigned int> arr, ostream &outs = cerr) {
     for (const auto &value : arr) {
-        cerr << setfill('0') << setw(8) << hex << value << " ";
+        outs << setfill('0') << setw(8) << hex << value << " ";
     }
-    cerr << endl;
+    outs << endl;
 }
 
 vector<unsigned int> encode(span<const unsigned int> data, size_t size) {
@@ -61,12 +60,10 @@ int main() {
     cerr << "Using " << size << " bits, stored as -> " << storeSize << " uints."
          << endl;
     cerr << "Read from stdin:" << endl;
-    log(input);
+    hex_log(input);
 
-    vector<unsigned int> play = decode(input, size);
+    decode(input, size);
 
-    cerr << "new shit decoder:" << endl;
-    log(play);
 
     cout << "ANSWER" << endl;
 }
