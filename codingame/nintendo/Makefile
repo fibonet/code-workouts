@@ -8,7 +8,7 @@ EXE := $(basename $(SRC))
 	$(CXX) $(CXXFLAGS) $< -o $@
 
 run: $(EXE)
-	./nintendo < input.txt
+	./pgf2
 
 clean:
 	rm -f $(EXE)
