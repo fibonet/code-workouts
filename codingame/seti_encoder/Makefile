@@ -1,5 +1,5 @@
 CXX      := g++
-CXXFLAGS := -std=c++23 -O2 -Wall
+CXXFLAGS := -std=c++23 -O2 -Wall -mpclmul -msse4.1
 
 SRC := $(wildcard *.cpp)
 EXE := $(basename $(SRC))
@@ -8,7 +8,6 @@ EXE := $(basename $(SRC))
 	$(CXX) $(CXXFLAGS) $< -o $@
 
 run: $(EXE)
-	echo "here on run $(EXE)"
 	./nintendo < input.txt
 
 clean:
