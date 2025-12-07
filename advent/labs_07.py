@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
-from collections import deque
-from operator import itemgetter
+from collections import defaultdict
 
 
-def simulation(manifold: list):
+def count_active_splitters(manifold: list):
     splits = 0
     timelines = 1
     beams = {manifold[0].index("S")}
@@ -30,6 +29,26 @@ def simulation(manifold: list):
     return splits
 
 
+def quantum_count(manifold: list):
+    beams = {manifold[0].index("S"): 1}
+
+    for i, line in enumerate(manifold[1:]):
+        next_gen = defaultdict(int)
+        for pos, times in beams.items():
+            if line[pos] == "^":
+                next_gen[pos - 1] += times
+                next_gen[pos + 1] += times
+            else:
+                manifold[i + 1][pos] = "|"
+                next_gen[pos] += times
+
+        beams = dict(next_gen.items())
+        print(" ".join(line), "//", " ".join(map(str, beams.values())))
+
+
+    return sum(beams.values())
+
+
 def main(filename: str):
     with open(filename, "rt") as file:
         content = file.read().strip()
@@ -37,9 +56,10 @@ def main(filename: str):
 
     manifold = list(map(list, content.split("\n")))
 
-    splits = simulation(manifold)
+    splits = count_active_splitters(manifold)
+    timelines = quantum_count(manifold)
 
-    print(f"{splits=}")
+    print(f"{splits=} and {timelines=}")
 
 
 if __name__ == "__main__":
