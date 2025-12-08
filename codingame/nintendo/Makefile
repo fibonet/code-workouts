@@ -6,10 +6,9 @@ EXE := $(basename $(SRC))
 
 %: %.cpp
 	$(CXX) $(CXXFLAGS) $< -o $@
+	./$@
 
-run: $(EXE)
-	./pgf2
-
+.PHONY: clean
 clean:
 	rm -f $(EXE)
 
