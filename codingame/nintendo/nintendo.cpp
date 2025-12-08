@@ -46,14 +46,6 @@ static inline u256 gf2_clmul_128(const __m128i& a, const __m128i& b)
     return r;
 }
 
-static void print_u128(const __m128i& v)
-{
-    uint64_t hi = _mm_extract_epi64(v, 1);
-    uint64_t lo = _mm_extract_epi64(v, 0);
-    std::cout << std::hex << std::setfill('0') << std::setw(16) << hi << "_"
-              << std::setw(16) << lo;
-}
-
 void hex_log(span<const uint32_t> arr, ostream& outs = cerr)
 {
     for (const auto& value : arr)
@@ -157,7 +149,6 @@ int main()
     uint64_t cc = 0x46508fb7;
     uint64_t bb = 0x6677e201;
     cout << hex << cc << " x " << bb << endl;
-    uint64_t rr;
 
     uint64_t aa = gf2_reverse_poly_fast(cc);
     cout << hex << aa << endl;

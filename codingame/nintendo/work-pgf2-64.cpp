@@ -1,18 +1,30 @@
 #include "gf2.h"
+#include <array>
+#include <cstdint>
+#include <iostream>
+#include <span>
 
-constexpr size_t BITS = 64;
-
-void test_01()
+int main(void)
 {
-    std::bitset<BITS> a { 0xebf2831f };
-    std::bitset<BITS> b { 0xb0c152f9 };
-    std::bitset<BITS> a_encoded { 0x0000000073af };
+    std::array<uint32_t, MAX_WORDS> input {};
+    size_t word_size;
+    std::cin >> word_size;
+    const size_t store_size = word_size >> 4;
+    std::cerr << "Working with " << word_size << " bits, " << store_size << " words."
+              << std::endl;
 
-    pretty_hexbin<BITS>(a, "A");
-    pretty_hexbin<BITS>(b, "B");
+    for (size_t i = 0; i < store_size; i++)
+    {
+        std::cin >> std::hex >> input[i];
+    }
 
-    auto res = pgf2_mul<BITS>(a, b);
-    pretty_hexbin<BITS>(res, "C");
+    pretty_hexbin(std::span<uint32_t>(input.data(), store_size), "in");
+
+    auto res = gf2_mul(
+        std::span<uint32_t>(input.data(), store_size / 2),
+        std::span<uint32_t>(input.data() + store_size / 2, store_size / 2)
+    );
+    pretty_hexbin(std::span<uint32_t>(res.data(), store_size), "mul");
+
+    return 0;
 }
-
-int main() { test_01(); }

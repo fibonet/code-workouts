@@ -1,54 +1,55 @@
 #pragma once
 
-#include <bitset>
+#include <array>
 #include <cstdint>
 #include <cstdlib>
 #include <iomanip>
 #include <iostream>
 #include <ostream>
+#include <span>
 #include <string_view>
+#include <tuple>
+
+constexpr size_t MAX_WORDS = 16;
 
 /***
  * Pretty prints as grouped binary and hex format
  */
-template <size_t SIZE>
 void pretty_hexbin(
-    const std::bitset<SIZE>& value,
+    const std::span<uint32_t> values,
     std::string_view name,
-    std::ostream& output = std::cerr,
-    size_t group = SIZE / 2
+    std::ostream& print = std::cerr
 )
 {
-    std::cout << name << ": ";
-    for (size_t i = SIZE; i > 0; --i)
+    print << name << ":" << std::endl;
+    for (size_t i = values.size(); i > 0; --i)
     {
-        std::cout << value[i - 1];
-        if ((i - 1) % group == 0)
-        {
-            std::cout << " ";
-        }
+        const auto value = values[i - 1];
+        print << std::format("[{:2}] ", i - 1) << std::format(" x{:08x} ", value)
+              << std::format(" b{:032b}", value) << std::endl;
     }
-    auto numeric = value.to_ullong();
-    output << " 0x" << std::hex << std::setfill('0') << std::setw(SIZE / 4) << numeric;
-    output << std::endl;
 }
 
 /***
  * Performs Polynomial multiplication in GF2
  */
-template <size_t SIZE>
-std::bitset<SIZE> pgf2_mul(std::bitset<SIZE>& A, std::bitset<SIZE>& B)
+std::array<uint32_t, MAX_WORDS>
+gf2_mul(const std::span<uint32_t> left, const std::span<uint32_t> right)
 {
-    std::bitset<SIZE> C;
-    while (B.any())
+    std::array<uint32_t, MAX_WORDS> result {};
+
+    for (size_t i = 0; i < (left.size() << 5); ++i)
     {
-        if (B.test(0))
+        auto pi = std::div(i, 32);
+        auto left_bit = (left[pi.quot] >> pi.rem) & 1;
+        for (size_t j = 0; j < (right.size() << 5); ++j)
         {
-            C ^= A;
+            auto pj = std::div(j, 32);
+            auto right_bit = (right[pj.quot] >> pj.rem) & 1;
+            auto po = div(i + j, 32);
+            result[po.quot] ^= (left_bit & right_bit) << po.rem;
         }
-        B >>= 1;
-        A <<= 1;
     }
 
-    return C;
+    return result;
 }
