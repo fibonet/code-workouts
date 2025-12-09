@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <cstddef>
 #include <cstdint>
 #include <cstdlib>
 #include <iomanip>
@@ -11,6 +12,43 @@
 #include <tuple>
 
 constexpr size_t MAX_WORDS = 16;
+
+struct DivModResult
+{
+    size_t quot;
+    size_t rem;
+};
+
+inline DivModResult divmod32(std::size_t x) noexcept { return { x >> 5, x & 31 }; }
+
+/***
+ * Performs Polynomial multiplication in GF2
+ */
+std::span<uint32_t> gf2_mul(const std::span<uint32_t> coeff)
+{
+    static std::array<uint32_t, MAX_WORDS> result;
+    result.fill(0);
+
+    const size_t bits = coeff.size() << 4;
+    const size_t midp = coeff.size() >> 1;
+
+    for (size_t i = 0; i < bits; ++i)
+    {
+        auto pi = divmod32(i);
+        if ((coeff[pi.quot] >> pi.rem) & 1)
+        {
+            for (size_t j = 0; j < bits; ++j)
+            {
+                auto pj = divmod32(j);
+                auto right_bit = (coeff[pj.quot + midp] >> pj.rem) & 1;
+                auto po = div(i + j, 32);
+                result[po.quot] ^= right_bit << po.rem;
+            }
+        }
+    }
+
+    return {result.data(), coeff.size()};
+}
 
 /***
  * Pretty prints as grouped binary and hex format
@@ -28,28 +66,4 @@ void pretty_hexbin(
         print << std::format("[{:2}] ", i - 1) << std::format(" x{:08x} ", value)
               << std::format(" b{:032b}", value) << std::endl;
     }
-}
-
-/***
- * Performs Polynomial multiplication in GF2
- */
-std::array<uint32_t, MAX_WORDS>
-gf2_mul(const std::span<uint32_t> left, const std::span<uint32_t> right)
-{
-    std::array<uint32_t, MAX_WORDS> result {};
-
-    for (size_t i = 0; i < (left.size() << 5); ++i)
-    {
-        auto pi = std::div(i, 32);
-        auto left_bit = (left[pi.quot] >> pi.rem) & 1;
-        for (size_t j = 0; j < (right.size() << 5); ++j)
-        {
-            auto pj = std::div(j, 32);
-            auto right_bit = (right[pj.quot] >> pj.rem) & 1;
-            auto po = div(i + j, 32);
-            result[po.quot] ^= (left_bit & right_bit) << po.rem;
-        }
-    }
-
-    return result;
 }
