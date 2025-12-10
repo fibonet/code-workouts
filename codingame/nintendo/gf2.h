@@ -41,7 +41,33 @@ std::span<uint32_t> gf2_mul(const std::span<uint32_t> coeff)
             {
                 auto pj = divmod32(j);
                 auto right_bit = (coeff[pj.quot + midp] >> pj.rem) & 1;
-                auto po = div(i + j, 32);
+                auto po = divmod32(i + j);
+                result[po.quot] ^= right_bit << po.rem;
+            }
+        }
+    }
+
+    return {result.data(), coeff.size()};
+}
+
+std::span<uint32_t> gf2_fast_mul(const std::span<uint32_t> coeff)
+{
+    static std::array<uint32_t, MAX_WORDS> result;
+    result.fill(0);
+
+    const size_t bits = coeff.size() << 4;
+    const size_t midp = coeff.size() >> 1;
+
+    for (size_t i = 0; i < bits; ++i)
+    {
+        auto pi = divmod32(i);
+        if ((coeff[pi.quot] >> pi.rem) & 1)
+        {
+            for (size_t j = 0; j < bits; ++j)
+            {
+                auto pj = divmod32(j);
+                auto right_bit = (coeff[pj.quot + midp] >> pj.rem) & 1;
+                auto po = divmod32(i + j);
                 result[po.quot] ^= right_bit << po.rem;
             }
         }
