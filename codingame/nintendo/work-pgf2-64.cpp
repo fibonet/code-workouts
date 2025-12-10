@@ -5,10 +5,12 @@
 #include <cstdint>
 #include <iostream>
 #include <span>
+#include <sstream>
+#include <string>
 
 struct MultiplyFixture
 {
-    size_t word_size;
+    size_t half_size;
     std::string words;
     std::string expected;
 };
@@ -49,7 +51,25 @@ void nintendo_test_cases()
 
     for (const MultiplyFixture& it : DATA)
     {
-        std::cout << std::format("[ {:3}b ]  ", it.word_size) << it.words << std::endl;
+        std::array<uint32_t, MAX_WORDS> polynom;
+        std::array<uint32_t, MAX_WORDS> expected;
+
+        std::stringstream ss(it.words);
+        std::string token;
+        size_t word_count = 0;
+        while (std::getline(ss, token, ' '))
+        {
+            polynom[word_count++] = std::stoul(token, nullptr, 16);
+        }
+        pretty_hexbin(std::span { polynom.data(), word_count }, "poly");
+
+        ss = std::stringstream(it.expected);
+        word_count = 0;
+        while (std::getline(ss, token, ' '))
+        {
+            expected[word_count++] = std::stoul(token, nullptr, 16);
+        }
+        pretty_hexbin(std::span { expected.data(), word_count }, "expected");
     }
 }
 
