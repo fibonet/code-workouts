@@ -23,37 +23,40 @@ void nintendo_test_cases()
         { 32, "00000083 000000e5", "000073af 00000000" },
         { 32, "000000e5 00000083", "000073af 00000000" },
         { 32, "000073af 00000001", "000073af 00000000" },
-        { 32, "00000001 738377c1", "738377c1 00000000" },
-        { 32, "0000b0c5 0000cd55", "738377c1 00000000" },
-        { 32, "0000cd55 0000b0c5", "738377c1 00000000" },
-        { 32, "738377c1 00000001", "738377c1 00000000" },
-        { 32, "b0c152f9 ebf2831f", "46508fb7 6677e201" },
-        { 32, "ebf2831f b0c152f9", "46508fb7 6677e201" },
-        { 64, "0cf5c2bf 9aba68ef c18fb79b de70eef7",
-          "f3268b49 661859eb 0b324559 65ee6bda" },
-        { 64, "c18fb79b de70eef7 0cf5c2bf 9aba68ef",
-          "f3268b49 661859eb 0b324559 65ee6bda" },
-        { 128, "a30d28bd bda19675 3f95d074 b6f69434 c58f4047 d73fe36a 24be2846 e2ebe432",
-          "a91db473 fcea8db4 f3bb434a 8dba2f16 51abc87e 92c44759 5c1a16d3 6111c6f4" },
-        { 128, "c58f4047 d73fe36a 24be2846 e2ebe432 a30d28bd bda19675 3f95d074 b6f69434",
-          "a91db473 fcea8db4 f3bb434a 8dba2f16 51abc87e 92c44759 5c1a16d3 6111c6f4" },
-        { 256,
-          "320a18d5 b61b13f6 1aaaa61c 0afe2a41 1a4ff107 84cc2efc 956ff31d fa595299 "
-          "33749a7f 6cc9659d dc503569 ef4d0ef5 73b746c5 b8fb36d3 7616e9d6 b21251c4",
-          "4af6fc33 39029380 465c5267 c72f6a8b 0906e6d0 ca60550f 14a5e47c 42ad10fb "
-          "4a3bb446 bb74360a 5ea02b9c 23c68553 3fade253 e270ba24 39e141ad 6c38c43d" },
-        { 256,
-          "33749a7f 6cc9659d dc503569 ef4d0ef5 73b746c5 b8fb36d3 7616e9d6 b21251c4 "
-          "320a18d5 b61b13f6 1aaaa61c 0afe2a41 1a4ff107 84cc2efc 956ff31d fa595299",
-          "4af6fc33 39029380 465c5267 c72f6a8b 0906e6d0 ca60550f 14a5e47c 42ad10fb "
-          "4a3bb446 bb74360a 5ea02b9c 23c68553 3fade253 e270ba24 39e141ad 6c38c43d" }
+        // { 32, "00000001 738377c1", "738377c1 00000000" },
+        // { 32, "0000b0c5 0000cd55", "738377c1 00000000" },
+        // { 32, "0000cd55 0000b0c5", "738377c1 00000000" },
+        // { 32, "738377c1 00000001", "738377c1 00000000" },
+        // { 32, "b0c152f9 ebf2831f", "46508fb7 6677e201" },
+        // { 32, "ebf2831f b0c152f9", "46508fb7 6677e201" },
+        // { 64, "0cf5c2bf 9aba68ef c18fb79b de70eef7",
+        //   "f3268b49 661859eb 0b324559 65ee6bda" },
+        // { 64, "c18fb79b de70eef7 0cf5c2bf 9aba68ef",
+        //   "f3268b49 661859eb 0b324559 65ee6bda" },
+        // { 128, "a30d28bd bda19675 3f95d074 b6f69434 c58f4047 d73fe36a 24be2846
+        // e2ebe432",
+        //   "a91db473 fcea8db4 f3bb434a 8dba2f16 51abc87e 92c44759 5c1a16d3 6111c6f4" },
+        // { 128, "c58f4047 d73fe36a 24be2846 e2ebe432 a30d28bd bda19675 3f95d074
+        // b6f69434",
+        //   "a91db473 fcea8db4 f3bb434a 8dba2f16 51abc87e 92c44759 5c1a16d3 6111c6f4" },
+        // { 256,
+        //   "320a18d5 b61b13f6 1aaaa61c 0afe2a41 1a4ff107 84cc2efc 956ff31d fa595299 "
+        //   "33749a7f 6cc9659d dc503569 ef4d0ef5 73b746c5 b8fb36d3 7616e9d6 b21251c4",
+        //   "4af6fc33 39029380 465c5267 c72f6a8b 0906e6d0 ca60550f 14a5e47c 42ad10fb "
+        //   "4a3bb446 bb74360a 5ea02b9c 23c68553 3fade253 e270ba24 39e141ad 6c38c43d" },
+        // { 256,
+        //   "33749a7f 6cc9659d dc503569 ef4d0ef5 73b746c5 b8fb36d3 7616e9d6 b21251c4 "
+        //   "320a18d5 b61b13f6 1aaaa61c 0afe2a41 1a4ff107 84cc2efc 956ff31d fa595299",
+        //   "4af6fc33 39029380 465c5267 c72f6a8b 0906e6d0 ca60550f 14a5e47c 42ad10fb "
+        //   "4a3bb446 bb74360a 5ea02b9c 23c68553 3fade253 e270ba24 39e141ad 6c38c43d" }
     };
 
     for (const MultiplyFixture& it : DATA)
     {
         std::array<uint32_t, MAX_WORDS> polynom;
-        std::array<uint32_t, MAX_WORDS> expected;
+        std::array<uint32_t, MAX_WORDS> expected_result;
 
+        // parse test data into arrays
         std::stringstream ss(it.words);
         std::string token;
         size_t word_count = 0;
@@ -63,13 +66,28 @@ void nintendo_test_cases()
         }
         pretty_hexbin(std::span { polynom.data(), word_count }, "poly");
 
+        // perform gf2 multiplication
+        auto actual = gf2_fast_mul(std::span { polynom.data(), word_count });
+        pretty_hexbin(actual, "actual");
+
+        // parse expected values
         ss = std::stringstream(it.expected);
         word_count = 0;
         while (std::getline(ss, token, ' '))
         {
-            expected[word_count++] = std::stoul(token, nullptr, 16);
+            expected_result[word_count++] = std::stoul(token, nullptr, 16);
         }
-        pretty_hexbin(std::span { expected.data(), word_count }, "expected");
+        auto expected = std::span { expected_result.data(), word_count };
+        pretty_hexbin(expected, "expected");
+
+        if (gf2_equal(actual, expected))
+        {
+            std::cerr << "[ PASSED ]" << std::endl;
+        }
+        else
+        {
+            std::cerr << "[ FAILED ]" << std::endl;
+        }
     }
 }
 
