@@ -57,6 +57,7 @@ def make_connections(junction_boxes: list[Coords], limit=10):
 
     return networks.components()
 
+
 def fill_connections(junction_boxes: list[Coords]):
     distances = list()
     for left, right in combinations(junction_boxes, 2):
@@ -101,6 +102,7 @@ def main(filename: str):
         print(*(junction_boxes[k] for k in nodes))
 
     print("Last connection:", last_pair, last_pair[0].x * last_pair[1].x)
+
 
 if __name__ == "__main__":
     main("./08-input.txt")
