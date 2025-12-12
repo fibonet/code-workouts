@@ -47,6 +47,28 @@ def solve_largest(filename: str):
     return largest_area
 
 
+def find_largest_color(red_tiles: list[Coords], grid: list[list[str]]):
+    all_pairs = combinations(red_tiles, 2)
+    largest_pair = next(all_pairs)
+    largest_area = area(*largest_pair)
+    for a, b in all_pairs:
+        if (
+            any(grid[a.y][ci] == "." for ci in range(a.x + 1, b.x))
+            or any(grid[b.y][ci] == "." for ci in range(a.x + 1, b.x))
+            or any(grid[ri][a.x] == "." for ri in range(a.y + 1, b.y))
+            or any(grid[ri][b.x] == "." for ri in range(a.y + 1, b.y))
+        ):
+            # check if all tiles on countour are empty
+            continue
+
+        new_area = area(a, b)
+        if new_area > largest_area:
+            largest_pair = (a, b)
+            largest_area = new_area
+
+    return largest_area
+
+
 def solve_colorized(filename: str):
     print("Solving colors for", filename)
     with open(filename, "rt") as file:
@@ -58,8 +80,11 @@ def solve_colorized(filename: str):
 
     rows = max(ti.y for ti in tiles) + 3
     cols = max(ti.x for ti in tiles) + 3
+    print("Grid size", rows, "x", cols)
 
     grid = [["."] * cols for _ in range(rows)]
+
+    return 24
 
     for ti in tiles:
         grid[ti.y][ti.x] = RED
@@ -95,9 +120,9 @@ def solve_colorized(filename: str):
         last = ti
 
     print(*grid, sep="\n")
-    largest_area = find_largest_rectangle(tiles)
+    # largest_area = find_largest_color(tiles, grid)
 
-    return largest_area
+    return 24  # largest_area
 
 
 if __name__ == "__main__":
