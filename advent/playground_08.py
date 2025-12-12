@@ -57,6 +57,20 @@ def make_connections(junction_boxes: list[Coords], limit=10):
 
     return networks.components()
 
+def fill_connections(junction_boxes: list[Coords]):
+    distances = list()
+    for left, right in combinations(junction_boxes, 2):
+        heappush(distances, (dist(left, right), left, right))
+
+    networks = UnionFind(len(junction_boxes))
+    last_pair = tuple()
+    while len(networks.components()) > 1:
+        _, a, b = heappop(distances)
+        networks.union(a.i, b.i)
+        last_pair = (a, b)
+
+    return networks.components(), last_pair
+
 
 def main(filename: str):
     with open(filename, "rt") as file:
@@ -69,16 +83,24 @@ def main(filename: str):
     ]
     print("Found", len(junction_boxes), "coordinates")
 
-    circuits = make_connections(junction_boxes, limit=1000)
+    circuits = make_connections(junction_boxes, limit=10)
 
     print("Top networks:")
     for i, nodes in enumerate(circuits[:10]):
         print(i, nodes)
+        print(*(junction_boxes[k] for k in nodes))
 
     top_length = list(map(len, circuits))
     result = reduce(mul, top_length[:3], 1)
     print(" * ".join(map(str, top_length[:3])), "=", result)
 
+    circuits, last_pair = fill_connections(junction_boxes)
+    print("The network:")
+    for i, nodes in enumerate(circuits[:10]):
+        print(i, nodes)
+        print(*(junction_boxes[k] for k in nodes))
+
+    print("Last connection:", last_pair, last_pair[0].x * last_pair[1].x)
 
 if __name__ == "__main__":
     main("./08-input.txt")
