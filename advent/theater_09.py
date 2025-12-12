@@ -82,47 +82,34 @@ def solve_colorized(filename: str):
     cols = max(ti.x for ti in tiles) + 3
     print("Grid size", rows, "x", cols)
 
+    if max(rows, cols) > 10000:
+        raise ValueError(f"Grid of {rows:_} x {cols:_} = {rows * cols:_} is too big.")
+
     grid = [["."] * cols for _ in range(rows)]
-
-    return 24
-
-    for ti in tiles:
-        grid[ti.y][ti.x] = RED
 
     # scan rows
     tiles.sort(key=lambda ti: (ti.y, ti.x))
+    contour = tiles.copy()
     last = tiles[0]
     for ti in tiles[1:]:
         if ti.y == last.y:
             for ci in range(last.x + 1, ti.x):
-                grid[ti.y][ci] = GREEN
+                contour.append(Coords(ci, ti.y))
         last = ti
-    contour = tiles.copy()
 
     # scan columns
     tiles.sort(key=lambda ti: (ti.x, ti.y))
-    print(*tiles, sep="\n")
     last = tiles[0]
     for ti in tiles[1:]:
         if ti.x == last.x:
             for ri in range(last.y + 1, ti.y):
-                grid[ri][ti.x] = GREEN
                 contour.append(Coords(ti.x, ri))
         last = ti
 
-    # scan contour rows again
-    contour.sort(key=lambda ti: (ti.y, ti.x))
-    last = contour[0]
-    for ti in contour[1:]:
-        if ti.y == last.y:
-            for ci in range(last.x + 1, ti.x):
-                grid[ti.y][ci] = GREEN
-        last = ti
+    print(*contour, sep="\n")
+    largest_area = find_largest_color(tiles, grid)
 
-    print(*grid, sep="\n")
-    # largest_area = find_largest_color(tiles, grid)
-
-    return 24  # largest_area
+    return largest_area
 
 
 if __name__ == "__main__":
