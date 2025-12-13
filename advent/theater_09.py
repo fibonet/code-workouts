@@ -50,54 +50,65 @@ def solve_largest(filename: str):
     return largest_area
 
 
-def contour_walk(a: Coords, b: Coords) -> Generator[Coords]:
-    left = min(a.x, b.x)
-    right = max(a.x, b.x)
-    top = min(a.y, b.y)
-    bottom = max(a.y, b.y)
-
-    for i in range(left, right + 1):
-        yield Coords(i, top)
-
-    for i in range(top, bottom + 1):
-        yield Coords(right, i)
-
-    for i in range(left, right + 1):
-        yield Coords(i, bottom)
-
-    for i in range(top, bottom + 1):
-        yield Coords(left, i)
-
-
-def find_largest_color(red_tiles: list[Coords], green_tiles: list[Coords]):
+def find_largest_color(
+    red_tiles: list[Coords], horizontal_edges: dict, vertical_edges: dict
+):
     all_pairs = combinations(red_tiles, 2)
     largest_pair = next(all_pairs)
     largest_area = area(*largest_pair)
 
-    by_rows = defaultdict(list)
-    for ti in chain(red_tiles, green_tiles):
-        by_rows[ti.y].append(ti.x)
-
-    by_cols = defaultdict(list)
-    for ti in chain(red_tiles, green_tiles):
-        by_cols[ti.x].append(ti.y)
+    tiles = set(red_tiles)
 
     for a, b in all_pairs:
-        is_inside = True
-        for ti in contour_walk(a, b):
-            left, right = min(by_rows[ti.y]), max(by_rows[ti.y])
-            if ti.x < left or ti.x > right:
-                is_inside = False
-                print(ti, "not inside, by row")
-                break
+        print("working on", (a, b))
+        # a, b are definitely inside, so the question is where do the other corners are
+        c1 = Coords(a.x, b.y)
+        print("Corner", c1)
+        if c1 in tiles:
+            c1_is_inside = True
+            print("c1 is a red tile")
+        else:
+            h_cross = False
+            for ey, (left, right) in horizontal_edges.items():
+                if left <= c1.x <= right:
+                    h_cross = not h_cross
+                    print("h cross", ey, (left, right))
 
-            top, bottom = min(by_cols[ti.x]), max(by_cols[ti.x])
-            if ti.y < top or ti.y > bottom:
-                is_inside = False
-                print(ti, "not inside, by col")
-                break
+            v_cross = False
+            for ex, (top, bottom) in vertical_edges.items():
+                if top < c1.y < bottom:
+                    v_cross = not v_cross
+                    print("v cross", ex, (top, bottom))
 
-        if not is_inside:
+            c1_is_inside = h_cross and v_cross
+            if c1_is_inside:
+                print("c1 is inside", h_cross, v_cross)
+            else:
+                print("c1 is outside", h_cross, v_cross)
+
+        c2 = Coords(b.x, a.y)
+        print("Corner", c2)
+        if c2 in tiles:
+            c2_is_inside = True
+            print("c2 is a red tile")
+        else:
+            h_cross = False
+            for ey, (left, right) in horizontal_edges.items():
+                if left < c2.x < right:
+                    h_cross = not h_cross
+
+            v_cross = False
+            for ex, (top, bottom) in vertical_edges.items():
+                if top < c2.y < bottom:
+                    v_cross = not v_cross
+
+            c2_is_inside = h_cross and v_cross
+            if c2_is_inside:
+                print("c2 is inside", h_cross, v_cross)
+            else:
+                print("c2 is outside", h_cross, v_cross)
+
+        if not c1_is_inside or not c2_is_inside:
             continue
 
         new_area = area(a, b)
@@ -107,7 +118,8 @@ def find_largest_color(red_tiles: list[Coords], green_tiles: list[Coords]):
 
     print("largest", *largest_pair)
 
-    return largest_area
+    raise RuntimeError("Stop")
+    return largest_area, largest_pair
 
 
 def solve_colorized(filename: str):
@@ -119,62 +131,62 @@ def solve_colorized(filename: str):
     red_tiles = [Coords(*map(int, line.split(","))) for line in content.split("\n")]
     print("Parsed", len(red_tiles), "red tiles.")
 
-    rows = max(ti.y for ti in red_tiles) + 3
-    cols = max(ti.x for ti in red_tiles) + 3
-
     # scan rows
+    horizontal_edges = dict()
     red_tiles.sort(key=lambda ti: (ti.y, ti.x))
-    green_tiles = list()
     last = red_tiles[0]
-    horizontal = list()
-    left, right = last.x, last.x
     for ti in red_tiles[1:]:
         if ti.y == last.y:
-            for ci in range(last.x + 1, ti.x):
-                green_tiles.append(Coords(ci, ti.y))
-            left, right = min(ti.x, left), max(ti.x, right)
-        else:
-            horizontal.append((Coords(left, last.y), Coords(right, last.y)))
-            left, right = ti.x, ti.x
-
+            horizontal_edges[last.y] = (last.x, ti.x)
         last = ti
-    horizontal.append((Coords(left, last.y), Coords(right, last.y)))
 
-    print("Horizontal")
-    print(*horizontal, sep="\n")
+    print(len(horizontal_edges), "horizontal lines")
+    pprint(horizontal_edges)
 
     # scan columns
+    vertical_edges = dict()
     red_tiles.sort(key=lambda ti: (ti.x, ti.y))
     last = red_tiles[0]
-    vertical = list()
-    top, bottom = last.y, last.y
     for ti in red_tiles[1:]:
         if ti.x == last.x:
-            for ri in range(last.y + 1, ti.y):
-                green_tiles.append(Coords(ti.x, ri))
-            top, bottom = min(ti.y, top), max(ti.y, bottom)
-        else:
-            vertical.append((Coords(last.x, top), Coords(last.x, bottom)))
-            top, bottom = ti.y, ti.y
+            vertical_edges[last.x] = (last.y, ti.y)
         last = ti
-    vertical.append((Coords(last.x, top), Coords(last.x, bottom)))
 
-    print("Vertical")
-    print(*vertical, sep="\n")
+    print(len(vertical_edges), "vertical lines")
+    pprint(vertical_edges)
 
-    largest_area = find_largest_color(red_tiles, green_tiles)
+    largest_area, corners = find_largest_color(
+        red_tiles, horizontal_edges, vertical_edges
+    )
 
     # render contour
-    xs, ys = zip(*green_tiles)
-    plt.scatter(xs, ys, s=0.1, color="green")
-    xs, ys = zip(*red_tiles)
-    plt.scatter(xs, ys, s=1, color="red")
     plt.gca().set_aspect("equal", "box")
     plt.gca().invert_yaxis()
+
+    xs, ys = zip(*red_tiles)
+    plt.scatter(xs, ys, s=1, color="red")
+
+    left = min(corners[0].x, corners[1].x)
+    right = max(corners[0].x, corners[1].x)
+    bottom = min(corners[0].y, corners[1].y)
+    top = max(corners[0].y, corners[1].y)
+
+    width = right - left
+    height = top - bottom
+
+    from matplotlib.patches import Rectangle
+
+    ax = plt.gca()
+
+    rect = Rectangle(
+        (left, bottom), width, height, fill=False, edgecolor="blue", linewidth=1
+    )
+
+    ax.add_patch(rect)
+
     plt.savefig(f"{filename}.png", dpi=600)
     plt.close()
 
-    raise RuntimeError("stop")
     return largest_area
 
 
