@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-from collections import defaultdict, namedtuple
-from collections.abc import Generator
-from itertools import chain, combinations
+from collections import namedtuple
+from itertools import combinations
 from pprint import pprint
 
 import matplotlib.pyplot as plt
+from matplotlib.patches import Rectangle
+from numpy import test
 
 
 def banner(name: str):
@@ -50,6 +51,48 @@ def solve_largest(filename: str):
     return largest_area
 
 
+def is_inside(point: Coords, red_tiles: set, vertical_edges: dict) -> bool:
+    if point in red_tiles:
+        return True
+
+    h_crosses = 0
+    for ex, (top, bottom) in vertical_edges.items():
+        if ex > point.x and top < point.y < bottom:
+            h_crosses += 1
+
+    # h_crosses = 0
+    # for ex, (top, bottom) in vertical_edges.items():
+    #     if ex > point.x and top < point.y < bottom:
+    #         h_crosses += 1
+
+    if h_crosses % 2 == 0:
+        print(point, "is outside", h_crosses, "crossings (through verticals)")
+
+    return h_crosses % 2 == 1
+
+
+def rectangle_inside_polygon(
+    left, right, top, bottom, horizontal_edges, vertical_edges
+):
+    # check top and bottom rectangle edges against vertical polygon edges
+    for ex, (py_top, py_bottom) in vertical_edges.items():
+        if left < ex < right:
+            if py_top <= top <= py_bottom:
+                return False
+            if py_top <= bottom <= py_bottom:
+                return False
+
+    # check left and right rectangle edges against horizontal polygon edges
+    for ey, (px_left, px_right) in horizontal_edges.items():
+        if top < ey < bottom:
+            if px_left <= left <= px_right:
+                return False
+            if px_left <= right <= px_right:
+                return False
+
+    return True
+
+
 def find_largest_color(
     red_tiles: list[Coords], horizontal_edges: dict, vertical_edges: dict
 ):
@@ -61,65 +104,72 @@ def find_largest_color(
 
     for a, b in all_pairs:
         print("working on", (a, b))
-        # a, b are definitely inside, so the question is where do the other corners are
-        c1 = Coords(a.x, b.y)
-        print("Corner", c1)
-        if c1 in tiles:
-            c1_is_inside = True
-            print("c1 is a red tile")
+        left, right = min(a.x, b.x), max(a.x, b.x)
+        top, bottom = min(a.y, b.y), max(a.y, b.y)
+
+        test_points = [
+            Coords(left, top),
+            Coords(right, top),
+            Coords(left, bottom),
+            Coords(right, bottom),
+        ]
+
+        is_contained = all(
+            is_inside(tp, tiles, vertical_edges) for tp in test_points
+        ) and rectangle_inside_polygon(
+            left, right, top, bottom, horizontal_edges, vertical_edges
+        )
+        if is_contained:
+            new_area = area(a, b)
+            if new_area > largest_area:
+                largest_pair = (a, b)
+                largest_area = new_area
         else:
-            h_cross = False
-            for ey, (left, right) in horizontal_edges.items():
-                if left <= c1.x <= right:
-                    h_cross = not h_cross
-                    print("h cross", ey, (left, right))
-
-            v_cross = False
-            for ex, (top, bottom) in vertical_edges.items():
-                if top < c1.y < bottom:
-                    v_cross = not v_cross
-                    print("v cross", ex, (top, bottom))
-
-            c1_is_inside = h_cross and v_cross
-            if c1_is_inside:
-                print("c1 is inside", h_cross, v_cross)
-            else:
-                print("c1 is outside", h_cross, v_cross)
-
-        c2 = Coords(b.x, a.y)
-        print("Corner", c2)
-        if c2 in tiles:
-            c2_is_inside = True
-            print("c2 is a red tile")
-        else:
-            h_cross = False
-            for ey, (left, right) in horizontal_edges.items():
-                if left < c2.x < right:
-                    h_cross = not h_cross
-
-            v_cross = False
-            for ex, (top, bottom) in vertical_edges.items():
-                if top < c2.y < bottom:
-                    v_cross = not v_cross
-
-            c2_is_inside = h_cross and v_cross
-            if c2_is_inside:
-                print("c2 is inside", h_cross, v_cross)
-            else:
-                print("c2 is outside", h_cross, v_cross)
-
-        if not c1_is_inside or not c2_is_inside:
-            continue
-
-        new_area = area(a, b)
-        if new_area > largest_area:
-            largest_pair = (a, b)
-            largest_area = new_area
+            print("some points are outside")
 
     print("largest", *largest_pair)
 
-    raise RuntimeError("Stop")
+    # raise RuntimeError("Stop")
     return largest_area, largest_pair
+
+
+def render_tiles(
+    red_tiles: list[Coords],
+    corners: tuple[Coords, Coords],
+    horizontal_edges: dict,
+    vertical_edges: dict,
+    filename: str,
+):
+    ax = plt.gca()
+    ax.set_aspect("equal", "box")
+    ax.invert_yaxis()
+
+    # red tiles
+    xs, ys = zip(*red_tiles)
+    plt.scatter(xs, ys, color="red", s=1)
+
+    # horizontal edges (green)
+    for y, (left, right) in horizontal_edges.items():
+        plt.plot([left, right], [y, y], color="green", linewidth=0.2)
+
+    # vertical edges (green)
+    for x, (top, bottom) in vertical_edges.items():
+        plt.plot([x, x], [top, bottom], color="green", linewidth=0.2)
+
+    # largest rectangle (blue)
+    left = min(corners[0].x, corners[1].x)
+    right = max(corners[0].x, corners[1].x)
+    bottom = min(corners[0].y, corners[1].y)
+    top = max(corners[0].y, corners[1].y)
+    width = right - left
+    height = top - bottom
+    rect = Rectangle(
+        (left, bottom), width, height, fill=False, edgecolor="blue", linewidth=1
+    )
+    ax.add_patch(rect)
+
+    plt.savefig(f"{filename}.png", dpi=600)
+    plt.close()
 
 
 def solve_colorized(filename: str):
@@ -159,33 +209,7 @@ def solve_colorized(filename: str):
         red_tiles, horizontal_edges, vertical_edges
     )
 
-    # render contour
-    plt.gca().set_aspect("equal", "box")
-    plt.gca().invert_yaxis()
-
-    xs, ys = zip(*red_tiles)
-    plt.scatter(xs, ys, s=1, color="red")
-
-    left = min(corners[0].x, corners[1].x)
-    right = max(corners[0].x, corners[1].x)
-    bottom = min(corners[0].y, corners[1].y)
-    top = max(corners[0].y, corners[1].y)
-
-    width = right - left
-    height = top - bottom
-
-    from matplotlib.patches import Rectangle
-
-    ax = plt.gca()
-
-    rect = Rectangle(
-        (left, bottom), width, height, fill=False, edgecolor="blue", linewidth=1
-    )
-
-    ax.add_patch(rect)
-
-    plt.savefig(f"{filename}.png", dpi=600)
-    plt.close()
+    render_tiles(red_tiles, corners, horizontal_edges, vertical_edges, filename)
 
     return largest_area
 
