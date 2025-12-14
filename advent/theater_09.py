@@ -51,22 +51,21 @@ def solve_largest(filename: str):
     return largest_area
 
 
-def is_inside(point: Coords, red_tiles: set, vertical_edges: dict) -> bool:
+def is_inside(
+    point: Coords, red_tiles: set, vertical_edges: dict, horizontal_edges
+) -> bool:
     if point in red_tiles:
         return True
 
     h_crosses = 0
     for ex, (top, bottom) in vertical_edges.items():
-        if ex > point.x and top < point.y < bottom:
+        if ex > point.x and top <= point.y < bottom:
             h_crosses += 1
 
-    # h_crosses = 0
-    # for ex, (top, bottom) in vertical_edges.items():
-    #     if ex > point.x and top < point.y < bottom:
-    #         h_crosses += 1
-
-    if h_crosses % 2 == 0:
-        print(point, "is outside", h_crosses, "crossings (through verticals)")
+    v_crosses = 0
+    for ey, (left, right) in horizontal_edges.items():
+        if ey > point.y and left <= point.x < right:
+            v_crosses += 1
 
     return h_crosses % 2 == 1
 
@@ -75,20 +74,14 @@ def rectangle_inside_polygon(
     left, right, top, bottom, horizontal_edges, vertical_edges
 ):
     # check top and bottom rectangle edges against vertical polygon edges
-    for ex, (py_top, py_bottom) in vertical_edges.items():
-        if left < ex < right:
-            if py_top <= top <= py_bottom:
-                return False
-            if py_top <= bottom <= py_bottom:
-                return False
+    for ex, (etop, ebottom) in vertical_edges.items():
+        if (left < ex < right) and (etop < top < ebottom or etop < bottom < ebottom):
+            return False
 
     # check left and right rectangle edges against horizontal polygon edges
-    for ey, (px_left, px_right) in horizontal_edges.items():
-        if top < ey < bottom:
-            if px_left <= left <= px_right:
-                return False
-            if px_left <= right <= px_right:
-                return False
+    for ey, (eleft, eright) in horizontal_edges.items():
+        if (top < ey < bottom) and (eleft < left < eright or eleft < right < eright):
+            return False
 
     return True
 
@@ -103,7 +96,6 @@ def find_largest_color(
     tiles = set(red_tiles)
 
     for a, b in all_pairs:
-        print("working on", (a, b))
         left, right = min(a.x, b.x), max(a.x, b.x)
         top, bottom = min(a.y, b.y), max(a.y, b.y)
 
@@ -115,7 +107,7 @@ def find_largest_color(
         ]
 
         is_contained = all(
-            is_inside(tp, tiles, vertical_edges) for tp in test_points
+            is_inside(pi, tiles, vertical_edges, horizontal_edges) for pi in test_points
         ) and rectangle_inside_polygon(
             left, right, top, bottom, horizontal_edges, vertical_edges
         )
@@ -124,12 +116,8 @@ def find_largest_color(
             if new_area > largest_area:
                 largest_pair = (a, b)
                 largest_area = new_area
-        else:
-            print("some points are outside")
 
     print("largest", *largest_pair)
-
-    # raise RuntimeError("Stop")
     return largest_area, largest_pair
 
 
@@ -191,7 +179,6 @@ def solve_colorized(filename: str):
         last = ti
 
     print(len(horizontal_edges), "horizontal lines")
-    pprint(horizontal_edges)
 
     # scan columns
     vertical_edges = dict()
@@ -203,7 +190,6 @@ def solve_colorized(filename: str):
         last = ti
 
     print(len(vertical_edges), "vertical lines")
-    pprint(vertical_edges)
 
     largest_area, corners = find_largest_color(
         red_tiles, horizontal_edges, vertical_edges
@@ -211,6 +197,7 @@ def solve_colorized(filename: str):
 
     render_tiles(red_tiles, corners, horizontal_edges, vertical_edges, filename)
 
+    # raise RuntimeError("Stop")
     return largest_area
 
 
@@ -231,4 +218,6 @@ if __name__ == "__main__":
 
     largest_area = solve_colorized("09-input.txt")
     print(f"{largest_area=}")
-    assert largest_area == 4763932976, "Failed the large input"
+    assert largest_area == 1501292304, "Failed the large input"
+
+    print("All is good in da' hood.")
