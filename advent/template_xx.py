@@ -17,7 +17,7 @@ def banner(name: str):
 Coords = namedtuple("Coords", "x y")
 
 
-def render_tiles(filename: str):
+def render(filename: str):
     ax = plt.gca()
     ax.set_aspect("equal", "box")
     ax.invert_yaxis()
@@ -38,7 +38,7 @@ def solve(filename: str):
         content = file.read().strip()
         print("read", len(content), "bytes from", filename)
 
-    render_tiles(filename)
+    render(filename)
 
     return 0
 
