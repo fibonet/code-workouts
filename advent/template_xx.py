@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 from collections import namedtuple
-from itertools import combinations
 from pprint import pprint
 
 import matplotlib.pyplot as plt
@@ -47,19 +46,23 @@ if __name__ == "__main__":
     banner("Part one (I)")
     result = solve("10-easy.txt")
     print(f"{result=}")
-    assert result == 0, "Failed the easy input"
+    expected = 0
+    assert result == expected, f"Computed {result} was expected to be {expected}."
 
     result = solve("10-input.txt")
     print(f"{result=}")
-    assert result == 0, "Failed the large input"
+    expected = 0
+    assert result == expected, f"Computed {result} was expected to be {expected}."
 
     banner("Part two (II)")
     result = solve("10-easy.txt")
     print(f"{result=}")
-    assert result == 0, "Failed the easy input"
+    expected = 0
+    assert result == expected, f"Computed {result} was expected to be {expected}."
 
     result = solve("10-input.txt")
     print(f"{result=}")
-    assert result == 0, "Failed the large input"
+    expected = 0
+    assert result == expected, f"Computed {result} was expected to be {expected}."
 
     print("All is good in da' hood.")
