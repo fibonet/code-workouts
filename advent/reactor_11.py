@@ -1,9 +1,6 @@
 #!/usr/bin/env python3
-from collections import namedtuple
+from collections import deque
 from pprint import pprint
-
-import matplotlib.pyplot as plt
-from matplotlib.patches import Rectangle
 
 
 def banner(name: str):
@@ -13,22 +10,19 @@ def banner(name: str):
     print("*" * size)
 
 
-Coords = namedtuple("Coords", "x y")
+def bfs(graph: dict, start: str, stop: stop):
+    print(f"Searching for paths from {start} to {stop}.")
+    paths = 0
+    queue = deque([start])
+    while queue:
+        pos = queue.pop()
+        if pos == stop:
+            paths += 1
+        else:
+            for move in graph[pos]:
+                queue.appendleft(move)
 
-
-def render(filename: str):
-    ax = plt.gca()
-    ax.set_aspect("equal", "box")
-    ax.invert_yaxis()
-
-    # red tiles
-    xs, ys = zip((1, 1), (2, 4), (3, 9))
-    print(xs)
-    print(ys)
-    plt.plot(xs, ys, color="red")
-
-    plt.savefig(f"{filename}.png", dpi=600)
-    plt.close()
+    return paths
 
 
 def solve(filename: str):
@@ -37,21 +31,27 @@ def solve(filename: str):
         content = file.read().strip()
         print("read", len(content), "bytes from", filename)
 
-    render(filename)
+    graph = dict()
+    for line in content.split("\n"):
+        key, *values = line.split()
+        graph[key.rstrip(":")] = values
 
-    return 0
+    paths = bfs(graph, "you", "out")
+    print("Found", paths, "paths.")
+
+    return paths
 
 
 if __name__ == "__main__":
     banner("Part one (I)")
     result = solve("11-easy.txt")
     print(f"{result=}")
-    expected = 0
+    expected = 5
     assert result == expected, f"Computed {result} was expected to be {expected}."
 
     result = solve("11-input.txt")
     print(f"{result=}")
-    expected = 0
+    expected = 543
     assert result == expected, f"Computed {result} was expected to be {expected}."
 
     banner("Part two (II)")
