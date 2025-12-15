@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 from collections import deque
+from functools import lru_cache
 from pprint import pprint
+from typing import Iterable
 
 
 def banner(name: str):
@@ -10,19 +12,33 @@ def banner(name: str):
     print("*" * size)
 
 
-def bfs(graph: dict, start: str, stop: stop):
+def count_paths(graph: dict, start: str, stop: str):
     print(f"Searching for paths from {start} to {stop}.")
-    paths = 0
+    counter = 0
     queue = deque([start])
     while queue:
         pos = queue.pop()
         if pos == stop:
-            paths += 1
+            counter += 1
         else:
             for move in graph[pos]:
                 queue.appendleft(move)
+    return counter
 
-    return paths
+
+def count_paths_through(graph: dict, start: str, stop: str, required: Iterable):
+    print(f"Searching for paths from {start} to {stop}.")
+    required = frozenset(required)
+
+    @lru_cache
+    def dfs(node: str, remaining: set):
+        if node in remaining:
+            remaining = remaining - {node}
+        if node == stop:
+            return int(not remaining)
+        return sum(dfs(nn, remaining) for nn in graph[node])
+
+    return dfs(start, required)
 
 
 def solve(filename: str):
@@ -36,7 +52,24 @@ def solve(filename: str):
         key, *values = line.split()
         graph[key.rstrip(":")] = values
 
-    paths = bfs(graph, "you", "out")
+    paths = count_paths(graph, "you", "out")
+    print("Found", paths, "paths.")
+
+    return paths
+
+
+def solve_again(filename: str):
+    banner(f"Solving again {filename}")
+    with open(filename, "rt") as file:
+        content = file.read().strip()
+        print("read", len(content), "bytes from", filename)
+
+    graph = dict()
+    for line in content.split("\n"):
+        key, *values = line.split()
+        graph[key.rstrip(":")] = values
+
+    paths = count_paths_through(graph, "svr", "out", {"dac", "fft"})
     print("Found", paths, "paths.")
 
     return paths
@@ -55,14 +88,14 @@ if __name__ == "__main__":
     assert result == expected, f"Computed {result} was expected to be {expected}."
 
     banner("Part two (II)")
-    result = solve("11-easy.txt")
+    result = solve_again("./11-easy-two.txt")
     print(f"{result=}")
-    expected = 0
+    expected = 2
     assert result == expected, f"Computed {result} was expected to be {expected}."
 
-    result = solve("11-input.txt")
-    print(f"{result=}")
-    expected = 0
+    result = solve_again("11-input.txt")
+    print(f"{result=:_}")
+    expected = 479511112939968
     assert result == expected, f"Computed {result} was expected to be {expected}."
 
     print("All is good in da' hood.")
