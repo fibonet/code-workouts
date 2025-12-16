@@ -79,7 +79,8 @@ if __name__ == "__main__":
     banner("Part one (I)")
     result = solve("12-easy.txt")
     print(f"{result=}")
-    expected = 3  # TODO: the solution is incorrect, but luckily it matches
+    expected = 3
+    # TODO: this answer is obviously, but luckily it matches the large input
     assert result == expected, f"Computed {result} was expected to be {expected}."
 
     result = solve("12-input.txt")
