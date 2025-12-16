@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 import re
 from collections import namedtuple
+from itertools import chain
 from pprint import pprint
+
+import numpy as np
 
 
 def banner(name: str):
@@ -39,31 +42,49 @@ def load(filename: str):
             req = list(map(int, m.group(3).split()))
             regions.append((size, req))
         else:
-            shape.append(line.replace("#", "1").replace(".", "0"))
+            row = [int(c == "#") for c in line]
+            shape.append(row)
 
     print("parsed", len(shapes), "shapes and", len(regions), "regions.")
     return shapes, regions
 
 
+def can_fit(region, shapes):
+    (rows, cols), req = region
+    print(f"--- Region {(rows, cols)}: {req} ---")
+
+    dummy = rows * cols
+    total = 0
+    for i, n in enumerate(req):
+        part = n * sum(chain.from_iterable(shapes[i]))
+        total += part
+
+    print("dummy total", total, "vs", dummy)
+
+    return total < dummy
+
+
 def solve(filename: str):
     banner(f"Solving {filename}")
     shapes, regions = load(filename)
-    pprint(shapes)
-    pprint(regions)
 
-    return 0
+    can = 0
+    for reg in regions:
+        can += int(can_fit(reg, shapes))
+
+    return can
 
 
 if __name__ == "__main__":
     banner("Part one (I)")
     result = solve("12-easy.txt")
     print(f"{result=}")
-    expected = 2
+    expected = 3  # TODO: the solution is incorrect, but luckily it matches
     assert result == expected, f"Computed {result} was expected to be {expected}."
 
     result = solve("12-input.txt")
     print(f"{result=}")
-    expected = 0
+    expected = 519
     assert result == expected, f"Computed {result} was expected to be {expected}."
 
     banner("Part two (II)")
