@@ -1,4 +1,4 @@
-# Coding workouts
+# Mental coding workouts
 
 This repository contains a small set of **entrylevel programming challenges**, for any
 programming languages, yet I am prepared with starter code only for **Python** and
