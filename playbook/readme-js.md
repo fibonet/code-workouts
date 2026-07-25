@@ -412,6 +412,212 @@ function addItem(order, product, { quantity = 1 } = {}) {
 
 ---
 
+## Control Flow
+
+Structured programming builds behaviour from three basic control structures:
+
+1. **Sequence** — execute operations in a clear order.
+2. **Selection** — choose a path with `if`, `else`, or `switch`.
+3. **Iteration** — repeat behaviour with loops or collection operations.
+
+Compose these structures through functions instead of arbitrary jumps or hidden
+transfers of control. A reader should be able to determine what executes next
+from the code immediately in view.
+
+Each block should have one clear entry point. Prefer normal completion, guard
+clauses, `return`, `break`, and `continue` over state flags that indirectly
+control later behaviour. Multiple returns are acceptable when they make the
+paths explicit and keep the main path clear.
+
+```js
+function shippingCost(order) {
+  if (order.isDigital) {
+    return 0;
+  }
+
+  if (order.destination == null) {
+    throw new MissingDestination();
+  }
+
+  return rateFor(order.destination, order.weight);
+}
+```
+
+Do not force a function into a single return statement when doing so requires
+extra mutation, flags, or nesting.
+
+
+### Keep the main path visible
+
+Handle invalid input, exceptional states, and trivial cases early. Guard clauses
+prevent the main behaviour from drifting deeper into nested blocks.
+
+Prefer:
+
+```js
+function submit(order) {
+  if (order.isEmpty) {
+    throw new EmptyOrder();
+  }
+
+  if (!order.customer.canPurchase) {
+    throw new PurchaseNotAllowed();
+  }
+
+  const payment = collectPayment(order);
+  return createReceipt(order, payment);
+}
+```
+
+Avoid:
+
+```js
+function submit(order) {
+  if (!order.isEmpty) {
+    if (order.customer.canPurchase) {
+      const payment = collectPayment(order);
+      return createReceipt(order, payment);
+    }
+    throw new PurchaseNotAllowed();
+  }
+  throw new EmptyOrder();
+}
+```
+
+Deep nesting is a design signal, not merely a formatting problem. Simplify the
+condition, return early, extract cohesive behaviour, or reconsider the data
+model before adding another level.
+
+
+### Write conditions that reveal intent
+
+Give a complex condition a domain name when that name explains the decision.
+
+```js
+const isEligibleForRefund =
+  order.isPaid &&
+  !order.isRefunded &&
+  order.age <= REFUND_WINDOW;
+
+if (isEligibleForRefund) {
+  issueRefund(order);
+}
+```
+
+- Prefer positive conditions when they are easier to understand.
+- Avoid comparing booleans explicitly with `true` or `false`.
+- Use strict equality unless coercion is deliberate.
+- Use `value == null` only when intentionally checking for both `null` and
+  `undefined`.
+- Do not rely on truthiness when `false`, `0`, `""`, `null`, and `undefined`
+  have different meanings.
+- Keep assignments and other side effects out of conditions.
+- Extract a named predicate when several boolean operators obscure the decision.
+- Use `some()` and `every()` when they express a collection-wide question
+  directly.
+
+Use nullish coalescing when only missing values should trigger a default:
+
+```js
+const retryCount = options.retryCount ?? DEFAULT_RETRY_COUNT;
+```
+
+Do not use `||` for that purpose when `0`, `false`, or an empty string is a valid
+value.
+
+Ternary expressions are appropriate for one small choice:
+
+```js
+const label = account.isActive ? "active" : "inactive";
+```
+
+Use a normal conditional when either branch performs work, contains another
+condition, or is difficult to scan. Avoid nested ternary expressions.
+
+
+### Choose the right iteration
+
+Use `for...of` when processing iterable values. Use `while` when repetition is
+controlled by a changing condition.
+
+```js
+for (const order of pendingOrders) {
+  process(order);
+}
+```
+
+- Iterate over values directly instead of managing indexes unnecessarily.
+- Use a traditional `for` loop when the index or update expression is essential
+  to the algorithm.
+- Use `Object.keys()`, `Object.values()`, or `Object.entries()` for plain object
+  properties.
+- Do not use `for...in` for array values.
+- Use `break` when the required result has been found.
+- Use `continue` for a small guard that keeps the loop body clear.
+- Avoid modifying a collection while iterating over it unless the behaviour is
+  explicit and safe.
+- Ensure every `while` loop makes visible progress toward termination.
+- Avoid labelled statements; simplify or extract nested control flow instead.
+
+Use `map`, `filter`, `find`, `some`, and `every` when their names describe the
+operation directly. Use `reduce` only when the accumulation remains easy to
+understand.
+
+```js
+const paidOrderIds = orders
+  .filter((order) => order.isPaid)
+  .map((order) => order.id);
+```
+
+Prefer a loop when a chain performs side effects, requires early termination, or
+needs several intermediate decisions. Remember that `forEach` cannot be stopped
+with `break` or `return` from the enclosing function, and it does not await an
+asynchronous callback.
+
+
+### Use `switch` for one discriminant
+
+Use `switch` when selecting behaviour from a closed set of values belonging to
+one concept. Prefer `if` and `else` for ranges, unrelated predicates, or simple
+boolean decisions.
+
+```js
+switch (paymentResult.status) {
+  case "approved":
+    return createReceipt(paymentResult.transactionId);
+
+  case "declined":
+    throw new PaymentDeclined(paymentResult.reason);
+
+  default:
+    throw new UnsupportedPaymentStatus(paymentResult.status);
+}
+```
+
+End each case deliberately with `return`, `throw`, or `break`. If fallthrough is
+intentional, keep the cases adjacent and document the reason. A `default` branch
+should handle an unknown value meaningfully; it should not conceal an incomplete
+domain model.
+
+
+### Keep exceptional flow exceptional
+
+Errors transfer control beyond the current statement, so use them deliberately.
+
+- Keep `try` blocks as narrow as practical.
+- Catch only failures the current scope can handle or translate.
+- Remember that JavaScript permits any value to be thrown; narrow or normalize a
+  caught value before relying on its properties.
+- Use `finally` for cleanup that must occur whether the operation succeeds or
+  fails.
+- Never use thrown values as a substitute for an ordinary loop or conditional.
+- Preserve the original error with `cause` when translating it.
+
+The structure should tell the story: establish the preconditions, perform the
+work, and make every exit path deliberate.
+
+---
+
 ## Modules and Packages
 
 Use descriptive kebab-case module file names:
