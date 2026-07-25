@@ -160,8 +160,7 @@ reliability. A type that cannot be understood quickly is still a liability.
 ## Naming Conventions
 
 Names are part of the program. Read a name in the sentence where it will live
-before committing to it.
-
+before committing to it.  
 Choose names that reveal intent rather than implementation.  
 Use the language of the domain, avoid unclear abbreviations, and prefer a longer
 precise name over a short ambiguous one.
@@ -172,7 +171,7 @@ Follow these conventions:
 - Use `PascalCase` for classes and constructor functions.
 - Use `UPPER_SNAKE_CASE` only for genuine module-level constants.
 - Use kebab-case for module file names.
-- Prefix private class fields with `#` when language-enforced privacy is useful.
+- Use private class fields (`#field`) when language-enforced privacy is useful.
 - Do not prefix ordinary implementation details with underscores unless the
   project or an external API requires it.
 
@@ -331,9 +330,9 @@ another explicit domain value.
 Good:
 
 ```js
-class ProductNotFoundError extends Error {}
-class PaymentDeclinedError extends Error {}
-class SessionExpiredError extends Error {}
+class ProductNotFound extends Error {}
+class PaymentDeclined extends Error {}
+class SessionExpired extends Error {}
 ```
 
 Poor:
@@ -345,19 +344,21 @@ class HelperError extends Error {}
 
 The poor names describe a technical location rather than the problem.
 
-End error class names with `Error`. Use a built-in error when its meaning is
-accurate; create a domain error when callers need domain-specific handling or
-context.
+End error class names with `Error` only if it makes sense. A name like
+`ProductNotFoundError` or `PaymentFailedError` repeat the erroneuos state
+semantically. Use a built-in error when its meaning is accurate; create a domain
+error when callers need domain-specific handling or context.
+
 
 ### Carry structured context
 
 Use the error name for the category and properties for details:
 
 ```js
-class PaymentFailedError extends Error {
+class PaymentFailed extends Error {
   constructor(message, { reason, cause } = {}) {
     super(message, { cause });
-    this.name = "PaymentFailedError";
+    this.name = "PaymentFailed";
     this.reason = reason;
   }
 }
@@ -372,8 +373,8 @@ Preserve the original cause when translating errors:
 try {
   await paymentGateway.charge(payment);
 } catch (error) {
-  if (error instanceof GatewayDeclinedError) {
-    throw new PaymentDeclinedError(payment.id, { cause: error });
+  if (error instanceof GatewayDeclined) {
+    throw new PaymentDeclined(payment.id, { cause: error });
   }
 
   throw error;
@@ -472,7 +473,7 @@ function applyDiscount(order, discount) {
 Asynchronous work must have clear ownership and failure behavior.
 
 - Prefer `async` and `await` when they make control flow easier to follow.
-- Always await, return, store, or deliberately detach a promise.
+- Always await, return, track to completion, or deliberately detach a promise.
 - Document intentionally detached work and handle its rejection.
 - Run independent operations concurrently; await dependent operations in order.
 - Use `Promise.all` when every operation must succeed and
