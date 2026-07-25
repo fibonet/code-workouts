@@ -13,479 +13,464 @@ it earns its place; remove it when it no longer does.
 
 ---
 
-## 🧭 The Zen of TypeScript gurus
+## The Zen of Python
 
-> Types exist to make intent explicit. Explicit is better than implicit. Static
-> guarantees are better than runtime surprises. But not at the cost of clarity.
-> _Any_ type is a last resort, not a convenience. Type safety should guide
-> design, not fight it. When types become hard to model, _reconsider the
-> abstraction_. _Simple_ is better than _complex_, although _complex_ is better
-> than _complicated_. Inference is powerful, but _annotations_ document intent.
-> Use both thoughtfully. APIs should be _typed_ at their _boundaries_. Internal
-> details can evolve; _contracts must not_. Narrow types as early as possible.
-> Broad types leak uncertainty. _Union types_ model reality better than
-> over-generalisation. _Discriminated unions_ make it explicit. Avoid
-> _unnecessary generics_. Introduce them only when they remove duplication or
-> enforce invariants. A type that cannot be understood quickly is a liability.
-> _Immutability_ reduces mental overhead. _Readonly_ is a tool, not a
-> restriction. _Errors_ should be represented in types when possible. _Unchecked
-> exceptions_ are implicit contracts. _Null_ and _undefined_ must be handled
-> deliberately. Absence is part of the type system. _Third-party types_ deserve
-> scrutiny. Trust, but verify. Consistency across the code base outweighs local
-> preference. Strict mode is not strict enough – use it anyway. Types improve
-> _communication_ between developers. The code should _explain itself before
-> comments_ are needed. Prefer evolving types over bypassing them. Shortcuts
-> become long-term constraints. The goal is not perfect types, but reliable
-> systems. Perfection that blocks progress is failure. "Works at runtime" is not
-> sufficient.
+> Beautiful is better than ugly. Explicit is better than implicit. Simple is
+> better than complex. Complex is better than complicated. Flat is better than
+> nested. Sparse is better than dense. Readability counts. Special cases aren't
+> special enough to break the rules. Although practicality beats purity. Errors
+> should never pass silently. Unless explicitly silenced. In the face of
+> ambiguity, refuse the temptation to guess. There should be one—and preferably
+> only one—obvious way to do it. Although that way may not be obvious at first
+> unless you're Dutch. Now is better than never. Although never is often better
+> than right now. If the implementation is hard to explain, it's a bad idea. If
+> the implementation is easy to explain, it may be a good idea. Namespaces are
+> one honking great idea—let's do more of those!
+
+These principles, written by Tim Peters and available by running
+`python -m this`, set the direction for the rules that follow. Apply them with
+judgement: readability and maintainability matter more than mechanical
+conformance.
 
 ---
 
 ## Development Standards
 
-For as long as we have been writing programs, we have been trying to write rules
-for writing programs. Every generation of developers has produced its
-commandments, style guides, best practices, and sacred conventions, usually with
-the noblest of intentions: to make code easier to read, easier to change, and
-less painful to live with. And yet, time has not been kind to most of these
-rules. Languages change. Frameworks rise and fall. Teams grow, split, and forget
-why a rule existed in the first place. A standard that once protected us can, if
-followed blindly, become just another source of needless ceremony.
+Standards are useful only when they help developers produce clean, honest, and
+maintainable code. Languages, frameworks, and teams change, so rules must remain
+open to question. The point is discipline, not obedience. Every small decision
+—the name of a variable, the shape of a function, the location of a constant,
+or the boundary of a module—should be made with intent.
 
-So should we abandon standards altogether? Of course not. A poor rule,
-consistently applied and openly questioned, is often better than a thousand
-private preferences competing in the same codebase.
+> Write code a programmer can hold in one mind. If you cannot reason about it,
+> you cannot trust it. Write for the next programmer. Clever code is expensive
+> when nobody can understand it. Let one business change require one code change
+> in one place. Design for tests. Use the language of the domain, not private
+> vocabulary. Treat mutable state with suspicion. Avoid scattered magic values.
+> Give every module, class, and function one reason to exist. Delete dead code.
+> Before adding a helper, dependency, or abstraction, check whether the codebase
+> already has the answer. Leave the code a little cleaner than you found it.
 
-The point is not obedience. The point is discipline. Every small decision (the
-name of a variable, the shape of a function, the location of a constant, the
-boundary of a module) should be made with intent.
+### Python design principles
 
-Standards are useful only when they serve one purpose: helping developers
-produce clean, honest, maintainable code.
+- Support the Python versions declared by the project.
+- Follow the project's formatter, linter, type checker, and import conventions.
+- Use type annotations for public APIs and other important boundaries.
+- Prefer inference for local values when the inferred type is clear and precise.
+- Avoid `Any` where a more useful type can be expressed.
+- Accept abstract input types such as `Iterable` or `Mapping` when the
+  implementation does not require a concrete collection.
+- Return precise, predictable types. Avoid changing return shape according to
+  undocumented conditions.
+- Use `None` deliberately and represent optional values with `T | None`.
+- Narrow broad or optional values as early as practical.
+- Prefer small data classes, named tuples, protocols, or typed dictionaries over
+  unstructured dictionaries when the data has a stable shape.
+- Use typed fixtures, factories, mocks, and test utilities.
+- Do not suppress type-checking or lint errors without documenting why the
+  suppression is necessary.
+- Validate data at untyped boundaries. Type annotations do not perform runtime
+  validation.
+- Prefer standard-library solutions unless a dependency clearly earns its place.
 
-> Write code a programmer can hold in one mind. If you can't reason about it,
-> you can't trust it. Write for the next programmer. Clever code is expensive
-> when nobody can understand it. Let business change cause one code change, in
-> one place. Design for tests. Untested code is faith, not engineering. Name
-> things well. Use the language of the domain, not your own private vocabulary.
-> Treat mutable state with suspicion. Prefer code that behaves the same every
-> time. Don't scatter magic numbers and strings. Give them names. Put them where
-> they belong. Don't abbreviate unless everyone knows the abbreviation. Saving
-> keystrokes is not worth losing clarity. Give every file, class, and function
-> one reason to exist. Cohesion makes change safe. Delete dead code. Comments
-> that replace code, unused imports, abandoned experiments, and forgotten
-> dependencies only make the system harder to read. Before adding another
-> helper, dependency, or abstraction, ask whether the codebase already has the
-> answer. Leave the code a little cleaner than you found it. Small improvements
-> compound. Big rewrites rarely do.
-
-### TypeScript design orientation principles
-
-- All code should be strongly typed
-- Avoid `any` wherever possible
-- Require explicit types at public boundaries; prefer inference for local values
-  when the inferred type is clear and precise
-- Use typed mocks and strongly typed test utilities in tests
-- Prefer ESM-friendly implementations and modern module patterns
-- Avoid `@ts-expect-error` unless absolutely necessary and properly justified
-- Avoid `@ts-ignore` and never suppress errors without documenting the
-  underlying issue
-- Ensure public APIs, utilities, and shared components expose predictable and
-  maintainable typings
-- Prefer type safety and explicit contracts over loosely typed implementations
-
-Strong typing improves maintainability, developer experience, refactor safety,
-and long-term reliability across the codebase.
+Type annotations improve communication, tooling, refactor safety, and long-term
+reliability. They should clarify the design rather than compensate for a
+confusing abstraction.
 
 ---
 
 ## Naming Conventions
 
-Names are not decorations. They are part of the program. Read a name in the
-sentence where it will live before you commit to it.
+Names are part of the program. Read a name in the sentence where it will live
+before committing to it.
 
-Spend more time naming than typing. A good name is cheaper than a good comment,
-and it keeps paying that debt back every time the code is read.
+Choose names that reveal intent rather than implementation. Use the language of
+the domain, avoid unclear abbreviations, and prefer a longer precise name over a
+short ambiguous one.
 
-Name things so the code reads like a story. If the sentence sounds awkward, the
-name is probably wrong.
+Follow Python's established naming conventions:
 
-Choose names that reveal intent, not implementation. Readers should understand
-_why_ something exists before they need to understand _how_ it works.
-
-Make names answer questions, not raise them. Every moment of doubt becomes a
-pause in the reader's flow.
+- Use `snake_case` for variables, functions, methods, and modules.
+- Use `PascalCase` for classes and exceptions.
+- Use `UPPER_SNAKE_CASE` for module-level constants.
+- Prefix implementation details with a single underscore when they are not part
+  of the public API.
+- Do not use double leading underscores merely to indicate privacy. Name
+  mangling exists primarily to avoid accidental clashes in subclasses.
 
 ### Naming data symbols
 
-Use nouns for variables, constants and parameters, but remember that English
-grammar still matters: collections deserve plural names, and individual elements
-deserve singular names.
+Use nouns for variables, constants, attributes, and parameters. Collections
+deserve plural names, and individual elements deserve singular names.
 
-```ts
-for (const order of orders) {
-    ...
-}
+```python
+for order in orders:
+    process(order)
 ```
 
-Never encode today's implementation into tomorrow's name. `userMap`,
-`userArray`, and `cachedList` become lies as the design evolves. Name the
-concept, not the container.
+Do not encode today's implementation into tomorrow's name. Names such as
+`user_dict`, `user_list`, and `cached_array` become misleading as the design
+evolves. Name the concept, not its current container.
 
 A boolean should read like a question:
 
-```ts
-if (isAnonymous) ...
-if (user.hasPermission) ...
-if (order.isPaid) ...
-if (isLoading) ...
-if (hasError) ...
-if (canSubmit) ...
-if (shouldRender) ...
+```python
+if is_anonymous:
+    ...
+
+if user.has_permission:
+    ...
+
+if order.is_paid:
+    ...
+
+if can_submit:
+    ...
 ```
 
-Avoid ambiguous or unclear names such as:
+Avoid ambiguous names such as `flag`, `status`, `data`, `obj`, or `result` when
+they do not explain their purpose.
 
-```ts
-if (loadingFlag) ...
-if (status) ...
-if (checkError) ...
-```
+Introduce explanatory symbols when they make the code clearer:
 
-Do not be afraid to introduce explanatory symbols when they make the code
-clearer:
+```python
+out_of_stock_products = [
+    product for product in products if product.stock <= 0
+]
 
-```ts
-const outOfStockProducts = products.filter((product) => product.stock <= 0);
-
-for (const product of outOfStockProducts) {
-  product.colour = "grey";
-}
+for product in out_of_stock_products:
+    mark_as_unavailable(product)
 ```
 
 Every name should earn its place. If replacing it with `thing` changes nothing,
-the name tells you nothing. Avoid generic names that say nothing about their
-contents, such as `data`, `object`, or `instance`.
+the name communicates nothing.
 
 ### Naming behaviour symbols
 
-Function names should use expressive verbs that describe the effect. Prefer
-`discardInactiveConnections` over `inactiveConnectionsCleanup`.
+Function and method names should use expressive verbs that describe their
+effect. Prefer `discard_inactive_connections` over
+`inactive_connections_cleanup`.
 
-Examples:
-
-```ts
-getProductPrice();
-formatCurrency();
-buildSearchPayload();
+```python
+get_product_price()
+format_currency()
+build_search_payload()
 ```
 
-Do not abbreviate thought. Saving four characters is not worth costing every
-reader four seconds.
+Use `get_` for an operation that retrieves or computes a value, not
+automatically for every property access. Use `is_`, `has_`, `can_`, or
+`should_` when they make a boolean result read naturally.
 
-If two names are easy to confuse, they are wrong, even if both are technically
-correct.
+A name should fit wherever it appears: in assignments, conditions, loops,
+logging context, and function calls. Read those expressions aloud. If they
+sound unnatural, rename the symbol.
 
-A name should fit naturally everywhere it appears: in assignments, conditions,
-loops, and method calls. Read those lines aloud. If they sound unnatural, rename
-them. Good code should read like plain English.
-
-```ts
-const pendingStatuses = new Set([
-    OrderStatus.Open,
-    OrderStatus.Processing,
-    OrderStatus.AwaitingPayment,
-]);
-
-const pendingOrders = orders.filter(order => pendingStatuses.has(order.status));
-
-while (pendingOrders.length > 0) {
-    const order = pendingOrders.shift();
-    ...
+```python
+pending_statuses = {
+    OrderStatus.OPEN,
+    OrderStatus.PROCESSING,
+    OrderStatus.AWAITING_PAYMENT,
 }
-```
 
-The code explains itself.
+pending_orders = [
+    order for order in orders if order.status in pending_statuses
+]
 
-Name symbols by looking at how they are used, not only where they are declared.
-When choosing a name, imagine how it will look in different contexts:
-
-```ts
-if (?)
-return ?;
-for (const ? of ?)
-logger.info({ ? });
-process(?);
-```
-
-If every one of those lines reads naturally, you have probably found the right
-name. That is a surprisingly effective litmus test.
-
-### Events
-
-An event names something that happened, not something that should happen.
-
-Events describe facts. Commands describe intent.
-
-```ts
-// ✓ Events
-orderPlaced;
-paymentAuthorized;
-emailSent;
-userSignedIn;
-
-// ✗ Commands
-placeOrder;
-authorizePayment;
-sendEmail;
-signInUser;
-```
-
-Prefer the past tense. If it happened, say so.
-
-```ts
-userCreated;
-orderCancelled;
-paymentFailed;
-cacheInvalidated;
-```
-
-Avoid:
-
-```ts
-createUserEvent;
-cancelOrderEvent;
-paymentFailure;
-cacheInvalidate;
-```
-
-The `Event` suffix adds no information. The imperative tense (`createUser`,
-`cacheInvalidate`) blurs the line between events and commands. Nominalizations
-(`paymentFailure`) obscure the timeline — prefer `paymentFailed`.
-
-#### Include the business concept in the name
-
-Good:
-
-```ts
-checkoutCompleted;
-inventoryReserved;
-refundIssued;
-```
-
-Poor:
-
-```ts
-completed;
-success;
-done;
-updated;
-```
-
-An event should still make sense when it appears alone in a log.
-
-### Exceptions
-
-An error should answer one question:
-
-> What prevented the operation from succeeding?
-
-Not:
-
-> Where did the code happen to throw?
-
-TypeScript has no typed catch clause. Because you cannot dispatch on error type
-at the language level, error design must compensate: use structured data and
-narrow type guards instead of relying on class hierarchies alone.
-
-Errors are not just failures. They are information. Give them names that
-describe the category and data that describe the cause.
-
-#### Name the problem, not the implementation
-
-Good:
-
-```ts
-ProductNotFound;
-PaymentDeclined;
-SessionExpired;
-InvalidCoupon;
-```
-
-Poor:
-
-```ts
-ApiError;
-ServiceError;
-RepositoryError;
-HelperError;
-```
-
-Those tell you where the error came from, not what happened.
-
-Avoid the `Error` or `Exception` suffix altogether, as it is obvious from the
-code that anything that follows a throw statement is an exception. But you have
-to choose the name carefully to indicate the problem you want to capture.
-
-#### Describe the violated expectation
-
-Good:
-
-```ts
-MissingAuthorization;
-UnsupportedCurrency;
-DuplicateOrder;
-OrderAlreadyPaid;
-```
-
-These read naturally:
-
-```ts
-throw new OrderAlreadyPaid(orderId);
-```
-
-Prefer errors that carry structured information over errors that rely only on
-class names.
-
-Example:
-
-```ts
-class PaymentFailed extends Error {
-  constructor(
-    message: string,
-    readonly reason: "declined" | "expired_card" | "insufficient_funds",
-  ) {
-    super(message);
-  }
-}
-```
-
-Use error names for the category. Use properties for the details.
-
-```
-PaymentFailed
-  └── reason: 'declined'
-
-OrderSkipped
-  └── reason: 'already_paid'
-
-NotAuthorized
-  └── reason: 'expired_token'
-```
-
-Rather than creating hundreds of classes:
-
-```ts
-PaymentDeclined;
-PaymentExpiredCard;
-PaymentInsufficientFunds;
-```
-
-Unless those cases genuinely have different handling.
-
-Do not create an error type for every sentence. Create types around decisions
-the caller must make.
-
-### File Naming
-
-Use hyphen-case, also known as kebab-case, for ordinary file names.
-
-Examples:
-
-```
-product-card.tsx
-mobile-navigation.ts
-```
-
-File names should be descriptive and predictable. Their location should also
-remain stable when the code is refactored.
-
-Keep files that change together close together.
-
-Avoid organising files around technical type hierarchies. Do not create
-catch-all files such as `constants.ts`, `types.ts`, `views.ts`, or `buttons.ts`
-just because a framework appears to encourage it. Prefer folders that group
-related features and responsibilities together.
-
-Start with a single file that serves one clear purpose. When that file grows
-large enough to become difficult to understand, for example above 300 lines,
-split it in a sensible way that preserves cohesion.
-
-### React Components
-
-Use PascalCase for React component names and component file names.
-
-Examples:
-
-```
-ProductCard.tsx
-SearchFilters.tsx
-```
-
-- File names should match component names.
-- Component names should clearly communicate responsibility and intent.
-
-### Hooks
-
-Custom hooks should:
-
-- Always start with `use`.
-- Clearly communicate behaviour or responsibility.
-- Use camelCase file names matching the hook name, as an exception to the
-  ordinary kebab-case file naming rule.
-
-Examples:
-
-```
-useProductSearch.ts
-useDebounce.ts
+for order in pending_orders:
+    process(order)
 ```
 
 ---
 
-## Backlog chapters
+## Events
 
-These sections are intentionally kept as lightweight placeholders for now. We
-will address them one by one as the standards evolve.
+An event names something that happened, not something that should happen.
+Events describe facts; commands describe intent.
 
-### High-priority placeholders
+```python
+# Events
+order_placed
+payment_authorized
+email_sent
+user_signed_in
 
-- [ ] Functions / function design — size, responsibility, parameters, purity,
-      guard clauses, and when to split behaviour.
-- [ ] Error handling patterns — propagation, boundaries, throw vs return, typed
-      errors, and React error boundaries.
-- [ ] Comments and documentation — when comments help, when they hide problems,
-      JSDoc expectations, and TODO/FIXME conventions.
-- [ ] Testing conventions — test structure, naming, mocking philosophy, typed
-      test utilities, and what belongs in unit/integration/e2e tests.
-- [ ] Async patterns — async/await, floating promises, cancellation, retries,
-      race conditions, and async error handling.
-- [ ] Conditionals and control flow — guard clauses, early returns, nesting
-      limits, ternaries, and readability of branching logic.
+# Commands
+place_order
+authorize_payment
+send_email
+sign_in_user
+```
 
-### Medium-priority placeholders
+Prefer the past tense for events:
 
-- [ ] Imports and module structure — ordering, barrel files, dependency
-      direction, circular dependencies, and feature boundaries.
-- [ ] Constants, enums, and configuration — magic values, placement, naming,
-      union types vs enums, and environment configuration.
-- [ ] Immutability in practice — readonly types, object and array updates,
-      mutation boundaries, and when mutation is acceptable.
-- [ ] React component patterns — props design, composition, component splitting,
-      render logic, and controlled vs uncontrolled components.
-- [ ] State management — local vs global state, derived state, lifting state,
-      co-location, and avoiding duplicated state.
-- [ ] Logging and observability — what to log, log levels, structured context,
-      tracing, and useful diagnostics.
+```python
+user_created
+order_cancelled
+payment_failed
+cache_invalidated
+```
+
+Avoid imperative names such as `create_user_event` and vague names such as
+`completed`, `success`, or `updated`. An event should still make sense when it
+appears alone in a log.
+
+Include the business concept in the name:
+
+```python
+checkout_completed
+inventory_reserved
+refund_issued
+```
+
+Use an `Event` suffix only when it distinguishes an event type from another
+domain concept. Do not add it mechanically.
+
+---
+
+## Exceptions
+
+An exception should answer one question:
+
+> What prevented the operation from succeeding?
+
+It should not merely describe where the code happened to raise it.
+
+Catch the narrowest exception you can handle. Never use a bare `except`, and do
+not catch `Exception` unless you are at a deliberate boundary where failures
+are logged, translated, or isolated. Do not silently discard exceptions.
+
+Use exceptions for exceptional failure, not ordinary branching. When absence or
+failure is an expected outcome, consider returning `None`, a result object, or
+another explicit domain value.
+
+### Name the problem, not the implementation
+
+Good:
+
+```python
+class ProductNotFoundError(Exception):
+    ...
+
+
+class PaymentDeclinedError(Exception):
+    ...
+
+
+class SessionExpiredError(Exception):
+    ...
+```
+
+Poor:
+
+```python
+class ServiceError(Exception):
+    ...
+
+
+class HelperError(Exception):
+    ...
+```
+
+The poor names describe a technical location rather than the problem.
+
+End exception class names with `Error` when doing so makes their role clear and
+matches standard Python practice. Use an existing built-in exception when its
+meaning is accurate; create a domain exception when callers need domain-specific
+handling or context.
+
+### Carry structured context
+
+Use the exception name for the category and attributes for details:
+
+```python
+from typing import Literal
+
+
+PaymentFailureReason = Literal[
+    "declined",
+    "expired_card",
+    "insufficient_funds",
+]
+
+
+class PaymentFailedError(Exception):
+    def __init__(
+        self,
+        message: str,
+        *,
+        reason: PaymentFailureReason,
+    ) -> None:
+        super().__init__(message)
+        self.reason = reason
+```
+
+Do not create an exception class for every sentence. Create distinct types
+around decisions callers genuinely need to make.
+
+Preserve the original cause when translating exceptions:
+
+```python
+try:
+    payment_gateway.charge(payment)
+except GatewayDeclinedError as error:
+    raise PaymentDeclinedError(payment.id) from error
+```
+
+---
+
+## Functions
+
+Give each function one clear responsibility and keep it at one level of
+abstraction. Prefer small functions, but do not split cohesive logic merely to
+satisfy a line-count rule.
+
+- Keep parameter lists focused. Introduce a meaningful object when several
+  parameters travel together.
+- Prefer keyword-only parameters when positional arguments would be unclear.
+- Avoid mutable default arguments.
+- Return early when a guard clause makes the main path easier to see.
+- Separate pure calculation from input/output where practical.
+- Make side effects visible in the function's name or API.
+- Do not use `*args` and `**kwargs` to hide an unclear interface.
+
+```python
+def add_item(
+    order: Order,
+    product: Product,
+    *,
+    quantity: int = 1,
+) -> Order:
+    if quantity <= 0:
+        raise ValueError("quantity must be positive")
+
+    return order.with_item(product, quantity=quantity)
+```
+
+---
+
+## Modules and Packages
+
+Use lowercase `snake_case` for Python module and package names:
+
+```text
+product_card.py
+mobile_navigation.py
+payment_processing/
+```
+
+Names should be descriptive and predictable. Keep code that changes together
+close together, and organize packages around features or domain responsibilities
+rather than technical type hierarchies.
+
+Avoid catch-all modules such as `utils.py`, `helpers.py`, `constants.py`, or
+`types.py`. A focused module name should explain what belongs inside it.
+
+Start with a module that serves one clear purpose. Split it when it becomes
+difficult to understand, preserving cohesion rather than applying an arbitrary
+line limit.
+
+Keep package initialization lightweight. Avoid import-time side effects and
+surprising work in `__init__.py`.
+
+Treat a leading underscore as the signal for non-public modules and symbols.
+Define `__all__` only when an explicit export list improves the package API.
+
+---
+
+## Data and State
+
+Prefer immutable values when they reduce the number of states a reader must
+track. Mutation is acceptable when it is local, explicit, and simpler than
+copying.
+
+- Use a data class for a record with a stable named structure.
+- Consider `frozen=True` when instances represent values.
+- Do not use a class when a function or simple data structure communicates the
+  design better.
+- Avoid shared mutable global state.
+- Return new collections when mutating an input would surprise the caller.
+- Use properties for inexpensive attribute-like access, not hidden network,
+  database, or otherwise costly operations.
+
+```python
+from dataclasses import dataclass
+from decimal import Decimal
+
+
+@dataclass(frozen=True, slots=True)
+class Money:
+    amount: Decimal
+    currency: str
+```
+
+---
+
+## Comments and Documentation
+
+Code should explain what it does. Comments should explain why a decision exists,
+identify a non-obvious constraint, or preserve context that cannot be expressed
+in code.
+
+- Keep comments accurate or remove them.
+- Do not narrate straightforward code.
+- Document public APIs according to the project's docstring convention.
+- Describe externally visible behavior, parameters, return values, raised
+  exceptions, and important side effects where they are not already obvious.
+- Give TODOs an owner or issue reference when the project workflow supports it.
+- Never leave commented-out code; version control already preserves history.
+
+---
+
+## Testing
+
+Tests are executable descriptions of behavior.
+
+- Name tests after the behavior and condition they verify.
+- Follow Arrange–Act–Assert when it improves readability, without adding
+  ceremonial comments.
+- Test public behavior rather than private implementation details.
+- Prefer small, typed fixtures and factories.
+- Mock at system boundaries, not every collaborator.
+- Keep tests deterministic. Control time, randomness, environment, and external
+  services explicitly.
+- Assert the important outcome, not every incidental detail.
+- Add a regression test when fixing a defect when practical.
+
+```python
+def test_checkout_rejects_an_expired_coupon() -> None:
+    order = order_with_coupon(expires_on=date(2025, 1, 1))
+
+    with pytest.raises(InvalidCouponError):
+        checkout(order, today=date(2025, 1, 2))
+```
+
+---
+
+## Backlog Chapters
+
+These sections remain to be developed as the standards evolve:
+
+- [ ] Async Python — task ownership, cancellation, timeouts, blocking work, and
+      structured concurrency.
+- [ ] Resource management — context managers, cleanup, files, connections, and
+      transaction boundaries.
+- [ ] Imports and dependency direction — absolute versus relative imports,
+      circular dependencies, and package boundaries.
+- [ ] Logging and observability — structured context, levels, tracing, and
+      exception reporting.
+- [ ] Configuration — environment variables, secrets, validation, and startup
+      failures.
+- [ ] Persistence — transaction scope, query boundaries, migrations, and domain
+      mapping.
+- [ ] Concurrency — threads, processes, synchronization, and shared state.
+- [ ] Security — input validation, serialization, subprocesses, paths, and
+      dependency hygiene.
 
 ---
 
 ## References
 
-### Coding Standards - Front-end
-
-Detailed Read — https://kfplc.atlassian.net/wiki/spaces/NGE/pages/262348479
-
-### Code Review Guidelines
-
-Detailed Read — https://kfplc.atlassian.net/wiki/spaces/NGE/pages/255230201
+- [PEP 8 — Style Guide for Python Code](https://peps.python.org/pep-0008/)
+- [PEP 20 — The Zen of Python](https://peps.python.org/pep-0020/)
+- [Python typing documentation](https://docs.python.org/3/library/typing.html)
+- [Python exceptions documentation](https://docs.python.org/3/tutorial/errors.html)
