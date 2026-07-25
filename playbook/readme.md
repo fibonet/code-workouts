@@ -13,38 +13,13 @@ it earns its place; remove it when it no longer does.
 
 ---
 
-## Table of Contents
-
-- [🧭 The Zen of TypeScript gurus](#-the-zen-of-typescript-gurus)
-- [Development Standards](#development-standards)
-  - [TypeScript design orientation principles](#typescript-design-orientation-principles)
-- [Naming Conventions](#naming-conventions)
-  - [Naming data symbols](#naming-data-symbols)
-  - [Naming behaviour symbols](#naming-behaviour-symbols)
-  - [Events](#events)
-    - [Include the business concept in the name](#include-the-business-concept-in-the-name)
-  - [Exceptions](#exceptions)
-    - [Name the problem, not the implementation](#name-the-problem-not-the-implementation)
-    - [Describe the violated expectation](#describe-the-violated-expectation)
-  - [File Naming](#file-naming)
-  - [React Components](#react-components)
-  - [Hooks](#hooks)
-- [Backlog chapters](#backlog-chapters)
-  - [High-priority placeholders](#high-priority-placeholders)
-  - [Medium-priority placeholders](#medium-priority-placeholders)
-- [References](#references)
-  - [Coding Standards - Front-end](#coding-standards---front-end)
-  - [Code Review Guidelines](#code-review-guidelines)
-
----
-
 ## 🧭 The Zen of TypeScript gurus
 
 > Types exist to make intent explicit. Explicit is better than implicit. Static
 > guarantees are better than runtime surprises. But not at the cost of clarity.
 > _Any_ type is a last resort, not a convenience. Type safety should guide
 > design, not fight it. When types become hard to model, _reconsider the
-> abstraction_. _Simple_ is better than _complex_, Although _complex_ is better
+> abstraction_. _Simple_ is better than _complex_, although _complex_ is better
 > than _complicated_. Inference is powerful, but _annotations_ document intent.
 > Use both thoughtfully. APIs should be _typed_ at their _boundaries_. Internal
 > details can evolve; _contracts must not_. Narrow types as early as possible.
@@ -108,7 +83,8 @@ produce clean, honest, maintainable code.
 
 - All code should be strongly typed
 - Avoid `any` wherever possible
-- Prefer explicit interfaces and type definitions over implicit typing
+- Require explicit types at public boundaries; prefer inference for local values
+  when the inferred type is clear and precise
 - Use typed mocks and strongly typed test utilities in tests
 - Prefer ESM-friendly implementations and modern module patterns
 - Avoid `@ts-expect-error` unless absolutely necessary and properly justified
@@ -455,6 +431,8 @@ Custom hooks should:
 
 - Always start with `use`.
 - Clearly communicate behaviour or responsibility.
+- Use camelCase file names matching the hook name, as an exception to the
+  ordinary kebab-case file naming rule.
 
 Examples:
 
