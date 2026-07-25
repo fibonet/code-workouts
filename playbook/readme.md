@@ -52,14 +52,20 @@ open to question. The point is discipline, not obedience. Every small decision
 —the name of a variable, the shape of a function, the location of a constant,
 or the boundary of a module—should be made with intent.
 
-> Write code a programmer can hold in one mind. If you cannot reason about it,
-> you cannot trust it. Write for the next programmer. Clever code is expensive
-> when nobody can understand it. Let one business change require one code change
-> in one place. Design for tests. Use the language of the domain, not private
-> vocabulary. Treat mutable state with suspicion. Avoid scattered magic values.
-> Give every module, class, and function one reason to exist. Delete dead code.
-> Before adding a helper, dependency, or abstraction, check whether the codebase
-> already has the answer. Leave the code a little cleaner than you found it.
+> Write code a programmer can hold in one mind.  
+> If you cannot reason about it, you cannot trust it.  
+> Write for the next programmer.  
+> Clever code is expensive when nobody can understand it.  
+> Let one business change require one code change in one place.  
+> Design for tests.  
+> Use the language of the domain, not private vocabulary.  
+> Treat mutable state with suspicion.  
+> Avoid scattered magic values.  
+> Give every module, class, and function one reason to exist.  
+> Delete dead code.  
+> Before adding a helper, dependency, or abstraction, check whether the codebase already has the answer.  
+> Leave the code a little cleaner than you found it.  
+
 
 ### Python design principles
 
@@ -94,8 +100,8 @@ confusing abstraction.
 Names are part of the program. Read a name in the sentence where it will live
 before committing to it.
 
-Choose names that reveal intent rather than implementation. Use the language of
-the domain, avoid unclear abbreviations, and prefer a longer precise name over a
+Choose names that reveal intent rather than implementation.  
+Use the language of the domain, avoid unclear abbreviations, and prefer a longer precise name over a
 short ambiguous one.
 
 Follow Python's established naming conventions:
@@ -108,10 +114,11 @@ Follow Python's established naming conventions:
 - Do not use double leading underscores merely to indicate privacy. Name
   mangling exists primarily to avoid accidental clashes in subclasses.
 
+
 ### Naming data symbols
 
-Use nouns for variables, constants, attributes, and parameters. Collections
-deserve plural names, and individual elements deserve singular names.
+Use nouns for variables, constants, attributes, and parameters.  
+Collections deserve plural names, and individual elements deserve singular names.
 
 ```python
 for order in orders:
@@ -154,6 +161,7 @@ for product in out_of_stock_products:
 
 Every name should earn its place. If replacing it with `thing` changes nothing,
 the name communicates nothing.
+
 
 ### Naming behaviour symbols
 
@@ -253,20 +261,21 @@ Use exceptions for exceptional failure, not ordinary branching. When absence or
 failure is an expected outcome, consider returning `None`, a result object, or
 another explicit domain value.
 
+
 ### Name the problem, not the implementation
 
 Good:
 
 ```python
-class ProductNotFoundError(Exception):
+class ProductNotFound(Exception):
     ...
 
 
-class PaymentDeclinedError(Exception):
+class PaymentDeclined(Exception):
     ...
 
 
-class SessionExpiredError(Exception):
+class SessionExpired(Exception):
     ...
 ```
 
@@ -288,6 +297,7 @@ matches standard Python practice. Use an existing built-in exception when its
 meaning is accurate; create a domain exception when callers need domain-specific
 handling or context.
 
+
 ### Carry structured context
 
 Use the exception name for the category and attributes for details:
@@ -303,7 +313,7 @@ PaymentFailureReason = Literal[
 ]
 
 
-class PaymentFailedError(Exception):
+class PaymentFailed(Exception):
     def __init__(
         self,
         message: str,
@@ -327,6 +337,7 @@ except GatewayDeclinedError as error:
 ```
 
 ---
+
 
 ## Functions
 
@@ -413,7 +424,9 @@ class Money:
     currency: str
 ```
 
+
 ---
+
 
 ## Comments and Documentation
 
@@ -454,7 +467,9 @@ def test_checkout_rejects_an_expired_coupon() -> None:
         checkout(order, today=date(2025, 1, 2))
 ```
 
+
 ---
+
 
 ## Backlog Chapters
 
@@ -476,6 +491,7 @@ These sections remain to be developed as the standards evolve:
 - [ ] Security — input validation, serialization, subprocesses, paths, and
       dependency hygiene.
 
+
 ---
 
 ## References
@@ -484,3 +500,4 @@ These sections remain to be developed as the standards evolve:
 - [PEP 20 — The Zen of Python](https://peps.python.org/pep-0020/)
 - [Python typing documentation](https://docs.python.org/3/library/typing.html)
 - [Python exceptions documentation](https://docs.python.org/3/tutorial/errors.html)
+
