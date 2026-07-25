@@ -369,6 +369,180 @@ def add_item(
 
 ---
 
+## Control Flow
+
+Structured programming builds behaviour from three basic control structures:
+
+1. **Sequence** — execute operations in a clear order.
+2. **Selection** — choose a path with `if`, `elif`, `else`, or `match`.
+3. **Iteration** — repeat behaviour with `for` or `while`.
+
+Compose these structures through functions instead of arbitrary jumps or hidden
+transfers of control. A reader should be able to determine what executes next
+from the code immediately in view.
+
+Each block should have one clear entry point. Prefer normal completion, guard
+clauses, `return`, `break`, and `continue` over state flags that indirectly
+control later behaviour. Multiple returns are acceptable when they make the
+paths explicit and keep the main path clear.
+
+```python
+def shipping_cost(order: Order) -> Decimal:
+    if order.is_digital:
+        return Decimal("0")
+
+    if order.destination is None:
+        raise MissingDestination
+
+    return rate_for(order.destination, order.weight)
+```
+
+Do not force a function into a single return statement when doing so requires
+extra mutation, flags, or nesting.
+
+
+### Keep the main path visible
+
+Handle invalid input, exceptional states, and trivial cases early. Guard clauses
+prevent the main behaviour from drifting deeper into nested blocks.
+
+Prefer:
+
+```python
+def submit(order: Order) -> Receipt:
+    if order.is_empty:
+        raise EmptyOrder
+
+    if not order.customer.can_purchase:
+        raise PurchaseNotAllowed
+
+    payment = collect_payment(order)
+    return create_receipt(order, payment)
+```
+
+Avoid:
+
+```python
+def submit(order: Order) -> Receipt:
+    if not order.is_empty:
+        if order.customer.can_purchase:
+            payment = collect_payment(order)
+            return create_receipt(order, payment)
+        raise PurchaseNotAllowed
+    raise EmptyOrder
+```
+
+Deep nesting is a design signal, not merely a formatting problem. Simplify the
+condition, return early, extract cohesive behaviour, or reconsider the data
+model before adding another level.
+
+
+### Write conditions that reveal intent
+
+Give a complex condition a domain name when that name explains the decision.
+
+```python
+is_eligible_for_refund = (
+    order.is_paid
+    and not order.is_refunded
+    and order.age <= REFUND_WINDOW
+)
+
+if is_eligible_for_refund:
+    issue_refund(order)
+```
+
+- Prefer positive conditions when they are easier to understand.
+- Avoid comparing booleans explicitly with `True` or `False`.
+- Use `is None` and `is not None` for absence.
+- Do not rely on truthiness when empty, zero, and absent have different meanings.
+- Keep side effects out of conditions.
+- Extract a named predicate when several boolean operators obscure the decision.
+- Use `any()` and `all()` when they express a collection-wide question directly.
+
+Ternary expressions are appropriate for one small choice:
+
+```python
+label = "active" if account.is_active else "inactive"
+```
+
+Use a normal conditional when either branch performs work, contains another
+condition, or is difficult to scan.
+
+
+### Choose the right iteration
+
+Use `for` when iterating over a collection or iterable. Use `while` when
+repetition is controlled by a changing condition.
+
+```python
+for order in pending_orders:
+    process(order)
+```
+
+- Iterate over values directly instead of managing indexes unnecessarily.
+- Use `enumerate()` when both an index and value are required.
+- Use `zip()` when related iterables should be traversed together.
+- Use `break` when the required result has been found.
+- Use `continue` for a small guard that keeps the loop body clear.
+- Avoid modifying a collection while iterating over it unless the behaviour is
+  explicit and safe.
+- Ensure every `while` loop makes visible progress toward termination.
+
+Comprehensions should perform a clear transformation or filter. Prefer a normal
+loop when a comprehension contains multiple conditions, side effects, or logic
+that needs explanation.
+
+```python
+paid_order_ids = [
+    order.id
+    for order in orders
+    if order.is_paid
+]
+```
+
+
+### Use pattern matching for structure
+
+Use `match` when selecting behaviour by the structure of data or a closed set of
+well-defined cases. Prefer `if` and `elif` for ranges, unrelated predicates, or
+simple boolean decisions.
+
+```python
+match payment_result:
+    case {"status": "approved", "transaction_id": transaction_id}:
+        return create_receipt(transaction_id)
+    case {"status": "declined", "reason": reason}:
+        raise PaymentDeclined(reason)
+```
+
+Make the expected cases explicit. Add a catch-all case only when unknown values
+can be handled meaningfully; do not use it to hide an incomplete domain model.
+
+
+### Keep exceptional flow exceptional
+
+Exceptions transfer control beyond the current statement, so use them
+deliberately.
+
+- Keep `try` blocks as narrow as practical.
+- Catch only exceptions the current scope can handle or translate.
+- Use `else` for work that should run only when the `try` block succeeds.
+- Use `finally` or a context manager for cleanup that must always occur.
+- Never use exceptions as a substitute for an ordinary loop or conditional.
+
+Context managers make resource-related control flow explicit:
+
+```python
+with repository.transaction() as transaction:
+    transaction.save(order)
+```
+
+The structure should tell the story: establish the preconditions, perform the
+work, and make every exit path deliberate.
+
+---
+
 ## Modules and Packages
 
 Use lowercase `snake_case` for Python module and package names:
@@ -500,4 +674,3 @@ These sections remain to be developed as the standards evolve:
 - [PEP 20 — The Zen of Python](https://peps.python.org/pep-0020/)
 - [Python typing documentation](https://docs.python.org/3/library/typing.html)
 - [Python exceptions documentation](https://docs.python.org/3/tutorial/errors.html)
-
