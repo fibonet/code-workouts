@@ -7,11 +7,16 @@ This playbook begins with the discipline of structured programming and the
 feedback-driven practices of eXtreme Programming:
 
 - Structured programming guides how we construct understandable code.
-- Extreme Programming guides how we safely discover, validate, and evolve it.
+- eXtreme Programming guides how we safely discover, validate, and evolve it.
 
 The rules that follow are guidance for engineering judgement, not a catalogue
 of rituals. Apply them in context, challenge them with evidence, and prefer the
 principle behind a rule over mechanical compliance.
+
+Use this playbook when designing code, reviewing changes, and establishing team
+conventions. It provides questions and defaults, not universal rules. The
+language-specific guides turn these principles into concrete conventions and
+examples.
 
 
 ## How to Read This Playbook
@@ -22,6 +27,10 @@ The guidance is organised as a hierarchy:
 
 Values and principles should remain durable. Practices and rules may change
 with the language, system, team, and problem.
+
+The major sections below state principles. Their bullet points describe
+practices that commonly support those principles; teams should turn them into
+context-specific rules only when their environment justifies doing so.
 
 For example:
 
@@ -46,6 +55,36 @@ For example:
 
 A reader should be able to follow the execution of a unit without reconstructing
 the whole system in their head.
+
+For example, guard clauses can make preconditions explicit and keep the main
+path visible:
+
+```ts
+// Harder to follow
+function submit(order: Order): Receipt {
+  if (!order.isEmpty) {
+    if (order.customer.canPurchase) {
+      return createReceipt(collectPayment(order));
+    }
+    throw new PurchaseNotAllowed();
+  }
+  throw new EmptyOrder();
+}
+
+// Main path remains visible
+function submit(order: Order): Receipt {
+  if (order.isEmpty) {
+    throw new EmptyOrder();
+  }
+
+  if (!order.customer.canPurchase) {
+    throw new PurchaseNotAllowed();
+  }
+
+  const payment = collectPayment(order);
+  return createReceipt(payment);
+}
+```
 
 
 ## Decomposition
@@ -91,11 +130,25 @@ visible without adding accidental complexity.
 Correctness is not established by tests alone. It comes from clear contracts,
 sound design, executable checks, and production evidence working together.
 
+Keep validation and side effects at visible boundaries so the domain operation
+can work with trusted values:
+
+```python
+def handle_checkout(payload: object) -> Receipt:
+    request = CheckoutRequest.parse(payload)
+    order = repository.get(request.order_id)
+
+    receipt = checkout(order)
+    repository.save(order)
+
+    return receipt
+```
+
 
 ## Incremental Development
 
 - Work in small, complete, verifiable changes.
-- Keep the system working throughout development.
+- Keep the main branch working and releasable throughout development.
 - Integrate frequently.
 - Refactor continuously while tests protect existing behaviour.
 - Separate behavioural changes from structural changes when that improves
@@ -179,6 +232,11 @@ When rules appear to conflict, ask:
 3. Which choice is least expensive to change?
 4. What evidence supports the additional complexity?
 5. Can the decision be postponed until more is known?
+6. Are inputs validated at the system boundary?
+7. Are side effects and dependencies visible?
+8. Does the change include verification proportionate to its risk?
+9. Is each new abstraction supported by concrete cases?
+10. Can another team member safely understand, operate, and change it?
 
 Choose deliberately, document consequential trade-offs, and revise the decision
 when the context changes.
@@ -186,5 +244,17 @@ when the context changes.
 
 ## Language-specific Guidance
 
-- [JavaScript and TypeScript](js-guide.md)
-- [Python](py-guide.md)
+- [JavaScript and TypeScript](js-guide.md) — types, naming, errors, asynchronous
+  work, modules, state, and testing.
+- [Python](py-guide.md) — typing, naming, exceptions, control flow, packages,
+  state, and testing.
+
+
+## Foundations and Further Reading
+
+This playbook draws particularly from:
+
+- Edsger W. Dijkstra, *Notes on Structured Programming*.
+- Kent Beck and Cynthia Andres, *eXtreme Programming Explained: Embrace
+  Change*.
+- Martin Fowler, *Refactoring: Improving the Design of Existing Code*.
