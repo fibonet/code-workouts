@@ -18,6 +18,9 @@ conventions. It provides questions and defaults, not universal rules. The
 language-specific guides turn these principles into concrete conventions and
 examples.
 
+> _"Design and programming are human activities; forget that and all is lost."_  
+> Bjarne Stroustrup, 1991
+
 
 ## How to Read This Playbook
 
@@ -100,6 +103,26 @@ Decomposition should reduce the amount of context needed to understand a
 change. A boundary that merely moves complexity elsewhere is not an
 improvement.
 
+Keep dependencies visible by passing capabilities into the operation that uses
+them:
+
+```ts
+type Charge = (amount: Money) => Promise<Payment>;
+
+async function checkout(
+  order: Order,
+  charge: Charge,
+): Promise<Receipt> {
+  const payment = await charge(order.total);
+  return Receipt.for(order, payment);
+}
+
+const receipt = await checkout(order, stripeGateway.charge);
+```
+
+The domain operation does not need to know which payment provider performs the
+charge, and a test can supply the same capability without infrastructure.
+
 
 ## Simplicity
 
@@ -114,6 +137,28 @@ improvement.
 
 Simple does not mean simplistic. A simple design makes its essential complexity
 visible without adding accidental complexity.
+
+Start with the concrete requirement rather than an abstraction for imagined
+variation:
+
+```python
+# One known case: keep it direct.
+def shipping_cost(order: Order) -> Money:
+    return FLAT_SHIPPING_RATE
+```
+
+Introduce alternatives when the domain actually requires them:
+
+```python
+def shipping_cost(order: Order) -> Money:
+    match order.delivery_method:
+        case DeliveryMethod.STANDARD:
+            return Money("5.00")
+        case DeliveryMethod.EXPRESS:
+            return Money("15.00")
+```
+
+There is no need for a strategy hierarchy until the known cases justify one.
 
 
 ## Correctness
@@ -144,6 +189,54 @@ def handle_checkout(payload: object) -> Receipt:
     return receipt
 ```
 
+Use domain types to validate values once and make invalid states difficult to
+pass deeper into the system:
+
+```ts
+class Quantity {
+  private constructor(readonly value: number) {}
+
+  static from(value: number): Quantity {
+    if (!Number.isInteger(value) || value <= 0) {
+      throw new InvalidQuantity(value);
+    }
+
+    return new Quantity(value);
+  }
+}
+```
+
+Separate decisions from effects when doing so makes the behaviour easier to
+verify:
+
+```python
+def decide_discount(order: Order) -> Discount:
+    if order.total >= MONEY_100:
+        return Discount.percent(10)
+
+    return Discount.none()
+
+
+def complete_order(order: Order, repository: OrderRepository) -> None:
+    discount = decide_discount(order)
+    order.apply(discount)
+    repository.save(order)
+```
+
+Test the observable contract rather than the private steps used to implement
+it:
+
+```ts
+it("rejects checkout when the order is empty", async () => {
+  const order = Order.empty();
+
+  await expect(checkout(order, charge))
+    .rejects.toBeInstanceOf(EmptyOrder);
+
+  expect(charge).not.toHaveBeenCalled();
+});
+```
+
 
 ## Incremental Development
 
@@ -159,6 +252,16 @@ def handle_checkout(payload: object) -> Receipt:
 Small steps reduce risk, shorten feedback loops, and make mistakes easier to
 locate and reverse.
 
+A useful increment crosses the layers it needs to deliver verified behaviour;
+it is not merely one unfinished architectural layer:
+
+```text
+Change 1: calculate the order total and test it
+Change 2: expose the total through the checkout endpoint
+Change 3: collect payment and record the outcome
+Change 4: add production telemetry and failure handling
+```
+
 
 ## Feedback
 
@@ -172,6 +275,23 @@ locate and reverse.
 
 Feedback is valuable only when it can influence the work. Automate it where
 possible and keep it close to the decision it evaluates.
+
+Prefer structured, actionable telemetry over messages that lose the context of
+an operation:
+
+```python
+logger.info(
+    "checkout_completed",
+    extra={
+        "order_id": str(order.id),
+        "payment_id": str(receipt.payment_id),
+        "total": str(order.total),
+    },
+)
+```
+
+Record enough context to investigate behaviour, but do not log secrets or full
+request payloads by default.
 
 
 ## Collective Maintainability
