@@ -124,6 +124,38 @@ The domain operation does not need to know which payment provider performs the
 charge, and a test can supply the same capability without infrastructure.
 
 
+## Stop Writing Classes
+
+If an object is created only to call one method and is then discarded, use a
+function instead. A class with two methods—one of them the constructor—is a
+strong signal that the class adds ceremony without providing useful state or
+behaviour.
+
+```ts
+// Unnecessary lifecycle and indirection
+class ReceiptFormatter {
+  constructor(private readonly currency: Currency) {}
+
+  format(receipt: Receipt): string {
+    return `${receipt.total.toString()} ${this.currency.code}`;
+  }
+}
+
+const output = new ReceiptFormatter(currency).format(receipt);
+
+// The operation is the abstraction
+function formatReceipt(receipt: Receipt, currency: Currency): string {
+  return `${receipt.total.toString()} ${currency.code}`;
+}
+
+const output = formatReceipt(receipt, currency);
+```
+
+Use a class when instances have a meaningful identity or lifecycle, preserve
+state across operations, or protect invariants by keeping related behaviour and
+data together. Do not introduce one merely to give a single operation a noun.
+
+
 ## Simplicity
 
 - Implement the simplest design that satisfies the current requirements.
