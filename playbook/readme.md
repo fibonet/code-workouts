@@ -151,6 +151,21 @@ function formatReceipt(receipt: Receipt, currency: Currency): string {
 const output = formatReceipt(receipt, currency);
 ```
 
+Before introducing a class, ask whether the language already provides the data
+structure you need. A thin wrapper around a map, list, tuple, or record is not a
+domain model unless it adds meaningful invariants or behaviour. Prefer the
+built-in representation until the domain demands more.
+
+Apply the same pressure to the structure surrounding a class:
+
+- Keep namespaces shallow. They prevent name collisions; they should not encode
+  an elaborate taxonomy.
+- Do not create a module merely to hold one class or one exception.
+- Introduce a custom exception only when callers can handle the failure more
+  meaningfully than they could with an existing error type.
+- Judge an API by the code required to use it. Layers that only forward a call
+  or rename a value are costs, not abstractions.
+
 Use a class when instances have a meaningful identity or lifecycle, preserve
 state across operations, or protect invariants by keeping related behaviour and
 data together. Do not introduce one merely to give a single operation a noun.
@@ -410,3 +425,4 @@ This playbook draws particularly from:
 - Kent Beck and Cynthia Andres, *eXtreme Programming Explained: Embrace
   Change*.
 - Martin Fowler, *Refactoring: Improving the Design of Existing Code*.
+- Jack Diederich, *Stop Writing Classes*, PyCon US 2012.
