@@ -14,6 +14,8 @@ Implement generate_haiku() to return three lists of Word objects.
 """
 
 import json
+from itertools import groupby
+from operator import itemgetter
 
 LINE_SYLLABLES = (5, 7, 5)
 REQUIRED_PARTS = {"adjective", "adverb", "noun", "verb"}
@@ -21,7 +23,13 @@ WORD_LIST = "words.json"
 STARTERS = ["A", "Absolute", "Accelerate", "Always", "Animal"]
 
 
-def generate_haiku(starter, words):
+def safe_group_by(words, key):
+    """Group word records by key"""
+    ordered_words = sorted(words, key=key)
+    return {part: list(records) for part, records in groupby(ordered_words, key=key)}
+
+
+def generate_haiku(words, starter):
     """Return three lines, each a list of word records. Fill this in."""
     # TODO: keep this dummy for now
     return []
@@ -38,9 +46,9 @@ if __name__ == "__main__":
     with open(WORD_LIST, encoding="utf-8") as file:
         words = json.load(file)
 
-    words_by_name = {word["word"].casefold(): word for word in words}
+    parts_of_speech = safe_group_by(words, key=itemgetter("part_of_speech"))
 
-    for name in STARTERS:
-        haiku = generate_haiku(words_by_name[name.casefold()], words)
+    for starter in STARTERS:
+        haiku = generate_haiku(parts_of_speech, starter)
         print_haiku(haiku)
         print()
